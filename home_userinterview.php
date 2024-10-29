@@ -132,7 +132,7 @@ $json = json_encode($values,JSON_UNESCAPED_UNICODE); //JSON化してJSに渡す�
               <tr>
                 <th>category_id</th>
                 <th>question_id</th>
-                <th>把握したいこと</th>
+                <th>category_type</th>
                 <th>質問</th>
                 <th>操作</th>
               </tr>
@@ -142,7 +142,7 @@ $json = json_encode($values,JSON_UNESCAPED_UNICODE); //JSON化してJSに渡す�
                 <tr>
                   <td><?=h($v["category_id"])?></td>
                   <td><?=h($v["question_id"])?></td>
-                  <td><?=h($v["category"])?></td>
+                  <td><?=h($v["category_type"])?></td>
                   <td><?=h($v["question_text"])?></td>
                   <td>
                     <a href="design.detail.php?id=<?=h($v["id"])?>" class="btn btn-sm btn-info">編集</a>

@@ -19,7 +19,7 @@ function h($str){
 
 function db_conn(){
     try {
-        $db_name = "userinterview_proto1";    //データベース名
+        $db_name = "interviewtool_v1";    //データベース名
         $db_host = "localhost"; //DBホスト
         $db_id   = "root";      //アカウント名
         $db_pw   = "";          //パスワード：XAMPPはパスワード無し or MAMPはパスワード”root”に修正してください。
