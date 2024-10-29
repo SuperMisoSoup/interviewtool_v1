@@ -228,3 +228,18 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+-- SELECT 
+--     ct.category_type,
+--     q.question_text,
+--     c.description,
+--     c.service_url
+--     c.user_id,
+--     q.question_id,
+--     c.category_id,
+--     ct.category_id
+-- FROM
+--     question_table q
+-- INNER JOIN category_table c ON q.category_id = c.category_id
+-- INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id;
