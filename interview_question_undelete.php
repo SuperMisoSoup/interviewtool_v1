@@ -6,8 +6,8 @@ $question_id = $_GET["question_id"];
 include("funcs.php");
 $pdo = db_conn();
 
-//３．データ削除(delete_flg=1)SQL作成
-$sql_update = "UPDATE question_table SET delete_flg=1 WHERE question_id=:question_id";
+//３．データ復活(delete_flg NULL)SQL作成
+$sql_update = "UPDATE question_table SET delete_flg = NULL WHERE question_id=:question_id";
 $stmt = $pdo->prepare($sql_update);
 $stmt->bindValue(':question_id', $question_id, PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
 $status = $stmt->execute(); //実行

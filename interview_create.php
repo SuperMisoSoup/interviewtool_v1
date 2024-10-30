@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
 }
 
 //データ参照SQL
-$sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id;";
+$sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id;";
 $stmt = $pdo->prepare($sql_select_question);
 $status = $stmt->execute();
 //SQLエラー確認
@@ -125,13 +125,18 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
         <h2 class="h4 mb-0">質問リスト</h2>
       </div>
       <div class="card-body">
+        <p><span class="font-weight-bold">カテゴリ</span>：<?= h($values["category_type"]) ?></p>
+        <p><span class="font-weight-bold">詳細目的</span>：<?= h($values["description"]) ?></p>
+        <p><span class="font-weight-bold">URL</span>：<?= h($values["service_url"]) ?></p>
+        <!-- FIXME:カテゴリと詳細目的を表示させる -->
+        <hr>
         <div class="table-responsive">
           <table class="table table-striped table-hover">
             <thead>
               <tr>
-                <th>カテゴリ</th>
+                <!-- <th>カテゴリ</th>
                 <th>詳細目的</th>
-                <th>URL</th>
+                <th>URL</th> -->
                 <th>質問</th>
                 <th>操作</th>
               </tr>
@@ -139,13 +144,17 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
             <tbody>
               <?php foreach ($values as $v) { ?>
                 <tr>
-                  <td><?= h($v["category_type"]) ?></td>
+                  <!-- <td><?= h($v["category_type"]) ?></td>
                   <td><?= h($v["description"]) ?></td>
-                  <td><?= h($v["service_url"]) ?></td>
+                  <td><?= h($v["service_url"]) ?></td> -->
                   <td><?= h($v["question_text"]) ?></td>
                   <td>
-                    <a href="interview_question_edit.php?question_id=<?= h($v["question_id"]) ?>" class="btn btn-sm btn-info">編集</a>
-                    <a href="interview_question_delete.php?question_id=<?= h($v["question_id"]) ?>" class="btn btn-sm btn-danger">削除</a>
+                    <a href="interview_question_edit.php?question_id=<?= h($v["question_id"]) ?>" class="btn btn-sm btn-outline-primary">編集</a>
+                    <?php if ($v["delete_flg"] == 1) { ?>
+                      <a href="interview_question_undelete.php?question_id=<?= h($v["question_id"]) ?>" class="btn btn-sm btn-outline-dark">元に戻す</a>
+                      <?php } else { ?>
+                        <a href="interview_question_delete.php?question_id=<?= h($v["question_id"]) ?>" class="btn btn-sm btn-outline-danger">削除</a>
+                    <?php } ?>
                   </td>
                 </tr>
               <?php } ?>
@@ -159,6 +168,7 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
+
 </html>
 
 
