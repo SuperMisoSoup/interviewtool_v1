@@ -1,0 +1,72 @@
+@startuml tables
+entity user_table as "user_table\nユーザ" {
+  + user_id [PK]
+  --
+  name
+  email
+  login_id
+  password
+  created_at
+  admin_flg
+  resigned_flg
+}
+
+entity interviewee_table as "interviewee_table\nインタビュイー" {
+  + interviewee_id [PK]
+  --
+  sex
+  age
+  created_at
+}
+
+entity category_table as "category_table\nカテゴリ" {
+  + category_id [PK]
+  --
+  category_type_id [FK]
+  description
+  service_url
+  created_at
+  deleted_at
+  user_id
+}
+
+entity category_type_table as "category_type_table\nカテゴリタイプ" {
+  + category_type_id [PK]
+  --
+  category_type
+}
+
+entity question_table as "question_table\n質問" {
+  + question_id [PK]
+  --
+  category_id [FK]
+  question_text
+  delete_flg
+  created_at
+  deleted_at
+}
+
+entity scenario_table as "scenario_table\nシナリオ管理" {
+  + scenario_id [PK]
+  --
+  category_id [FK]
+  question_order
+  next_question_id
+  rule
+  created_at
+  updated_at
+}
+
+entity chat_log_table as "chat_log_table\nチャットログ" {
+  + chat_log_id [PK]
+  --
+  scenario_id [FK]
+  interviewee_id [FK]
+  question_id [FK]
+  chat_log_order
+  chat_by
+  chat_text
+  created_at
+}
+
+@enduml

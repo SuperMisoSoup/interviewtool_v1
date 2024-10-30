@@ -1,0 +1,10 @@
+@startuml tables
+!include interviewtool_DB.pu
+
+companies ||-d--o{ users
+companies ||-o{ positions
+users ||-l-o| user_profiles
+users ||-d-o{ user_subordinate_users
+users ||-o{ user_positions
+positions ||-o{ user_positions
+@enduml
