@@ -22,12 +22,12 @@ entity interviewee_table as "interviewee_table\nインタビュイー" {
 entity category_table as "category_table\nカテゴリ" {
   + category_id [PK]
   --
-  category_type_id [FK]
+  - category_type_id [FK]
   description
   service_url
   created_at
   deleted_at
-  user_id
+  - user_id [FK]
 }
 
 entity category_type_table as "category_type_table\nカテゴリタイプ" {
@@ -39,7 +39,7 @@ entity category_type_table as "category_type_table\nカテゴリタイプ" {
 entity question_table as "question_table\n質問" {
   + question_id [PK]
   --
-  category_id [FK]
+  - category_id [FK]
   question_text
   delete_flg
   created_at
@@ -49,7 +49,7 @@ entity question_table as "question_table\n質問" {
 entity scenario_table as "scenario_table\nシナリオ管理" {
   + scenario_id [PK]
   --
-  category_id [FK]
+  - category_id [FK]
   question_order
   next_question_id
   rule
@@ -60,13 +60,21 @@ entity scenario_table as "scenario_table\nシナリオ管理" {
 entity chat_log_table as "chat_log_table\nチャットログ" {
   + chat_log_id [PK]
   --
-  scenario_id [FK]
-  interviewee_id [FK]
-  question_id [FK]
+  - scenario_id [FK]
+  - interviewee_id [FK]
+  - question_id [FK]
   chat_log_order
   chat_by
   chat_text
   created_at
 }
+
+user_table ||-d--o{ category_table
+category_type_table ||-r--o{ category_table
+category_table ||-o{ scenario_table
+category_table ||-d--o{ question_table
+interviewee_table ||-l--o{ chat_log_table
+question_table ||-o{ chat_log_table
+scenario_table ||-d--o{ chat_log_table
 
 @enduml
