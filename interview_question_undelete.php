@@ -16,6 +16,6 @@ $status = $stmt->execute(); //実行
 if ($status == false) {
   sql_error($stmt);
 } else {
-  redirect("interview_create.php");
+  redirect("interviewtool_question.php");
 }
 ?>

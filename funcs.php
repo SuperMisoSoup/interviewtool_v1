@@ -5,19 +5,6 @@ function h($str)
     return htmlspecialchars($str, ENT_QUOTES);
 }
 
-// DB接続関数：db_conn()
-// function db_conn(){
-//     try {
-//         $db_name = "docomo-tech-tkn_unit1";    //データベース名
-//         $db_host = "mysql57.docomo-tech-tkn.sakura.ne.jp"; //DBホスト
-//         $db_id   = "docomo-tech-tkn";      //アカウント名
-//         $db_pw   = "Gohantaberu4";          //パスワード：XAMPPはパスワード無し or MAMPはパスワード”root”に修正してください。
-//         return new PDO('mysql:dbname='.$db_name.';charset=utf8;host='.$db_host, $db_id, $db_pw);
-//     } catch (PDOException $e) {
-//         exit('DB Connection Error:'.$e->getMessage());
-//     }
-// }
-
 function db_conn()
 {
     try {
