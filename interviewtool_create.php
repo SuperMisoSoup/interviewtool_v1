@@ -18,7 +18,6 @@ try {
 
     // 最後に挿入されたIDを取得
     $lastInsertId = $pdo->lastInsertId();
-    // echo "category_id: " . $lastInsertId;
 } catch (PDOException $e) {
     echo "エラー: " . $e->getMessage();
 }
@@ -40,16 +39,25 @@ if ($status == false) {
 $category_type  = $row["category_type"];
 $description    = $row["description"];
 $service_url    = $row["service_url"];
-$generated_question = json_decode(generate_question_v1($category_type, $description, $service_url));
-var_dump($generated_question);
+$generated_question = str_replace(['`json', '`'], ['', ''], generate_question_v1($category_type, $description, $service_url));
+$generated_questions = json_decode($generated_question, true);
+// 確認用
+// echo '<pre>';
+// var_dump($generated_question);
+// echo '</pre>';
+
 
 // C)question DB登録
 $stmt = $pdo->prepare("INSERT INTO question_table (category_id, question_text) VALUES (?, ?)");
-foreach ($generated_question as $gq) {
+foreach ($generated_questions as $gq) {
     $stmt->bindValue(1, $lastInsertId);
     $stmt->bindValue(2, $gq);
     $stmt->execute();
 }
+
+// サーバで値を保持しておく
+$_SESSION["category_id"]    = $lastInsertId;
+
 
 // 登録後処理
 if ($stmt->errorCode() !== '00000') {
@@ -65,14 +73,3 @@ if ($stmt->errorCode() !== '00000') {
     exit();
 }
 ?>
-
-
-<!-- 
-TODO:POST値受け取り
-        - category_type_id
-        - description
-        - service_url
-        - user_id
-TODO:API連携して質問を生成
-TODO:ユーザ入力値と生成された質問をそれぞれDBに登録
--->

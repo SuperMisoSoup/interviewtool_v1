@@ -36,7 +36,7 @@ if ($val["resigned_flg"]) {
     $_SESSION["admin_flg"] = $val['admin_flg'];
     $_SESSION["name"]      = $val['name'];
     //Login成功時（select.phpへ）
-    redirect("interviewtool_question.php");
+    redirect("interviewtool_category.php");
   } else {
     //Login失敗時(login.phpへ)
     redirect("login.php");

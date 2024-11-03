@@ -6,6 +6,7 @@ $pdo = db_conn();
 
 $generated_question = "";
 $purpose = "";
+$category_id = $_SESSION["category_id"];
 
 // OpenAI APIを使用して質問を生成する関数を呼び出し
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
@@ -14,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
 }
 
 //データ参照SQL
-$sql_select_category = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id;";
+$sql_select_category = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" .$category_id . ";";
 $stmt = $pdo->prepare($sql_select_category);
 $status = $stmt->execute();
 //SQLエラー確認
@@ -25,23 +26,6 @@ if ($status == false) {
 $values = "";
 $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
 // $json = json_encode($values, JSON_UNESCAPED_UNICODE); //JSON化してJSに渡す場合
-
-
-
-
-// TODO:APIの返す質問をDBに登録
-// category・question登録用SQL
-// INSERT INTO category_question (ca.category_id, ca.category_type_id, ca.description, ca.service_url, ca.created_at, ca.deleted_at, ca.user_id, qu.question_id, qu.category_id, qu.question_text, qu.created_at)
-// SELECT ca.category_id, ca.category_type_id, ca.description, ca.service_url, ca.created_at, ca.deleted_at, ca.user_id, qu.question_id, qu.category_id, qu.question_text, qu.created_at
-// FROM category_table AS ca
-// OUTER JOIN question_table AS qu
-// ON ca.category_id = qu.category_id;
-
-// $sql_insert_category_question = "SELECT * FROM category_table INNER JOIN question_table ON category_table.category_id = question_table.category_id;";
-// $stmt = $pdo->prepare($sql_select_question);
-// $status = $stmt->execute();
-
-
 
 ?>
 
@@ -98,28 +82,6 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
 
 <body class="bg-light">
   <div class="container mt-4">
-    <!-- 質問の新規作成フォーム -->
-    <div class="card mb-5 shadow">
-      <div class="card-header bg-secondary text-white">
-        <h2 class="h4 mb-0">新規作成</h2>
-      </div>
-      <div class="card-body">
-        <form method="POST" action="" id="questionForm">
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="purpose" name="purpose" placeholder="把握したいこと" value="<?= h($purpose) ?>">
-            <label for="purpose">把握したいこと</label>
-          </div>
-          <div class="form-floating mb-3">
-            <textarea class="form-control" id="question" name="question" style="height: 100px" placeholder="質問"><?= h($generated_question) ?></textarea>
-            <label for="question">生成された質問</label>
-          </div>
-          <button type="submit" class="btn btn-info" name="generate">質問を自動生成</button>
-          <?php if ($generated_question): ?>
-            <button type="submit" class="btn btn-primary" formaction="design.insert.php">保存</button>
-          <?php endif; ?>
-        </form>
-      </div>
-    </div>
 
     <!-- 作成済み質問の表示 -->
     <div class="card shadow">
@@ -146,9 +108,6 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
             <tbody>
               <?php foreach ($values as $v) { ?>
                 <tr>
-                  <td><?= h($v["category_type"]) ?></td>
-                  <td><?= h($v["description"]) ?></td>
-                  <td><?= h($v["service_url"]) ?></td>
                   <td><?= h($v["question_text"]) ?></td>
                   <td>
                     <a href="interview_question_edit.php?question_id=<?= h($v["question_id"]) ?>" class="btn btn-sm btn-outline-primary">編集</a>

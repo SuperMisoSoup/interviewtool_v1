@@ -2,12 +2,12 @@
 include("funcs.php");
 session_start();
 sschk();
-$pdo = db_conn();
 
 //GETデータ取得
 $category_type_id = $_GET["category_type_id"];
 
 //データ参照SQL
+$pdo = db_conn();
 $sql_select_question = "SELECT * FROM category_type_table WHERE category_type_id=:category_type_id;";
 $stmt = $pdo->prepare($sql_select_question);
 $stmt->bindValue(":category_type_id", $category_type_id, PDO::PARAM_INT);
@@ -82,8 +82,3 @@ if ($status == false) {
 </body>
 
 </html>
-
-
-<!-- 
-TODO:入力内容をPOST
--->
