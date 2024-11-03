@@ -42,9 +42,9 @@ $service_url    = $row["service_url"];
 $generated_question = str_replace(['`json', '`'], ['', ''], generate_question_v1($category_type, $description, $service_url));
 $generated_questions = json_decode($generated_question, true);
 // 確認用
-// echo '<pre>';
-// var_dump($generated_question);
-// echo '</pre>';
+echo '<pre>';
+var_dump($generated_question);
+echo '</pre>';
 
 
 // C)question DB登録

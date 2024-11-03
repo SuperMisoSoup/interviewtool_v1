@@ -15,17 +15,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
 }
 
 //データ参照SQL
-$sql_select_category = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" .$category_id . ";";
-$stmt = $pdo->prepare($sql_select_category);
-$status = $stmt->execute();
+$sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" .$category_id . ";";
+$stmt_question = $pdo->prepare($sql_select_question);
+$status_question = $stmt_question->execute();
 //SQLエラー確認
-if ($status == false) {
-  sql_error($stmt);
+if ($status_question == false) {
+  sql_error($stmt_question);
 }
 //全データ取得
 $values = "";
-$values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
-// $json = json_encode($values, JSON_UNESCAPED_UNICODE); //JSON化してJSに渡す場合
+$values =  $stmt_question->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
+
+$sql_select_category = "SELECT * FROM category_table c INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" .$category_id . ";";
+$stmt_category = $pdo->prepare($sql_select_category);
+$status_category = $stmt_category->execute();
+//SQLエラー確認
+if ($status_category == false) {
+  sql_error($stmt_category);
+}
+//全データ取得
+$values_category = "";
+$values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
 
 ?>
 
@@ -89,18 +99,14 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
         <h2 class="h4 mb-0">質問リスト</h2>
       </div>
       <div class="card-body">
-        <p><span class="font-weight-bold">カテゴリ</span>：<?= h($values["category_type"]) ?></p>
-        <p><span class="font-weight-bold">詳細目的</span>：<?= h($values["description"]) ?></p>
-        <p><span class="font-weight-bold">URL</span>：<?= h($values["service_url"]) ?></p>
-        <!-- FIXME:カテゴリと詳細目的を表示させる -->
+        <p><span class="font-weight-bold">カテゴリ</span>：<?= h($values_category["category_type"]) ?></p>
+        <p><span class="font-weight-bold">詳細目的</span>：<?= h($values_category["description"]) ?></p>
+        <p><span class="font-weight-bold">URL</span>：<?= h($values_category["service_url"]) ?></p>
         <hr>
         <div class="table-responsive">
           <table class="table table-striped table-hover">
             <thead>
               <tr>
-                <!-- <th>カテゴリ</th>
-                <th>詳細目的</th>
-                <th>URL</th> -->
                 <th>質問</th>
                 <th>操作</th>
               </tr>

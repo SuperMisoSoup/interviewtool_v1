@@ -79,7 +79,7 @@ $v =  $stmt->fetch(); //PDO::FETCH_ASSOC[カラム名のみで取得できるモ
           </div>
           <input type="hidden" name="question_id" value="<?= h($v["question_id"]) ?>">
           <button type="submit" class="btn btn-primary">更新</button>
-          <a href="interview_create.php" class="btn btn-secondary">戻る</a>
+          <a href="interviewtool_question.php" class="btn btn-secondary">戻る</a>
         </form>
       </div>
     </div>

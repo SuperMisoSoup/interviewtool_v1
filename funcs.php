@@ -84,7 +84,6 @@ function generate_question_v1($category_type, $description, $service_url)
     echo '<pre>';
     var_dump( $result );
     echo '</pre>';
-    // FIXME:連携がうまくいかん
     return $result['choices'][0]['message']['content'] ?? 'エラー: 質問を生成できませんでした。';
 }
 
