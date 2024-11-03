@@ -78,6 +78,43 @@ function generate_question($purpose)
     return $result['choices'][0]['message']['content'] ?? 'エラー: 質問を生成できませんでした。';
 }
 
+function generate_question_v1($category_type, $description, $service_url)
+{
+    $api_key =  OPENAI_API_KEY; // `config.php` から API キーを読み込み
+    $api_url = 'https://api.openai.com/v1/chat/completions';
+
+    // 入力値作成
+    $user_content = $category_type. ' is the objective and'. $description .'is the detailed objective.';
+    if ($service_url !== "") {
+        $user_content .= ' The target URL is ' . $service_url . '.';
+    }
+
+    $data = [
+        'model' => 'gpt-4o-mini',
+        'messages' => [
+            ['role' => 'system', 'content' => 'As a marketer and depth interview expert, please create a user interview scenario consisting of 10 questions in Japanese aligned with the input objective and detailed objective. Please output only the questions in an array format.'],
+            ['role' => 'user', 'content' => $user_content],
+        ],
+        // 'language' => 'jp',
+        'max_tokens' => 500,
+    ];
+
+    $options = [
+        'http' => [
+            'header' => "Content-type: application/json\r\n" .
+                "Authorization: Bearer $api_key\r\n",
+            'method' => 'POST',
+            'content' => json_encode($data),
+        ],
+    ];
+
+    $context = stream_context_create($options);
+    $response = file_get_contents($api_url, false, $context);
+    $result = json_decode($response, true);
+
+    return $result['choices'][0]['message']['content'] ?? 'エラー: 質問を生成できませんでした。';
+}
+
 // TODO:チャットタイプにする(API)
 // TODO:質問を一つずつチャット形式で投げかけるようにする(GPT)
 
