@@ -59,6 +59,10 @@ if ($status == false) {
             </h2>
             <input type="hidden" name="category_type_id" value="<?= $category_type_id ?>">
             <div class="mb-3">
+                <label for="exampleFormControlInput1" class="form-label">サービス名を教えてください</label>
+                <input type="text" class="form-control" id="basic-url" name="service_name" aria-describedby="basic-addon3 basic-addon4">
+            </div>
+            <div class="mb-3">
                 <label for="exampleFormControlInput1" class="form-label">サービスURLがあれば教えてください</label>
                 <input type="text" class="form-control" id="basic-url" name="service_url" aria-describedby="basic-addon3 basic-addon4">
                 <!-- <div class="form-text" id="basic-addon4">任意</div> -->

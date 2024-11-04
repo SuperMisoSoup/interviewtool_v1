@@ -23,6 +23,7 @@ entity category_table as "category_table\nカテゴリ" {
   + category_id [PK]
   --
   - category_type_id [FK]
+  service_name
   description
   service_url
   created_at

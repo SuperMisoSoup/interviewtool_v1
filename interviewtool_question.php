@@ -8,6 +8,8 @@ $generated_question = "";
 $purpose = "";
 $category_id = $_SESSION["category_id"];
 
+$_SESSION["category_id"]    = $category_id;
+
 // OpenAI APIを使用して質問を生成する関数を呼び出し
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
   $purpose = $_POST['purpose'];
@@ -15,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
 }
 
 //データ参照SQL
-$sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" .$category_id . ";";
+$sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" . $category_id . ";";
 $stmt_question = $pdo->prepare($sql_select_question);
 $status_question = $stmt_question->execute();
 //SQLエラー確認
@@ -26,7 +28,7 @@ if ($status_question == false) {
 $values = "";
 $values =  $stmt_question->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
 
-$sql_select_category = "SELECT * FROM category_table c INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" .$category_id . ";";
+$sql_select_category = "SELECT * FROM category_table c INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" . $category_id . ";";
 $stmt_category = $pdo->prepare($sql_select_category);
 $status_category = $stmt_category->execute();
 //SQLエラー確認
@@ -130,6 +132,9 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
         </div>
       </div>
     </div>
+    <a href="chat.php" class="btn btn-primary">
+      チャットを開始
+    </a>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -142,31 +147,22 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
 
 <!-- 
 
-DONE:①ユーザから目的を聞いて8~10のインタビューシナリオを作る
-                └DBに登録する
-②生成された質問を編集
 ③チャットボットに流し込む
   与えられた質問に沿ってユーザと会話してください
   ユーザの回答に対して2~3回深掘りをしてください
 
 
-
-
-
-①質問シナリオ生成
-　-目的(category)を入力するとOpenAI APIで質問生成　(ex.①Webページの改善、②サービスUXの改善…)　→dマガジンの例で作る
-　-具体のWebページなども併せて入力　(ex.https://docomo-tech-tkn.sakura.ne.jp/01_HTMLCSS/html_name_00/index.html)
-　-返答を画面に表示
-②質問シナリオ編集
-　-編集・削除・順番変更できる
-　-生成！ボタンを押すとDBに保存
-　-URL？別画面に移動
 ③チャットツール
 　-②の質問をチャット形式で表示
 　-2~3回深掘り
 
+TODO:シナリオ管理tableに登録
 
+TODO:配布用のURLの作成方法
+TODO:過去に生成したインタビューも編集できるように
+TODO:自分の質問の追加ができるように
 
+TODO:順番変えれるように ※不要かも
 
 
 

@@ -5,6 +5,7 @@ sschk();
 
 // POSTデータ取得
 $category_type_id   = filter_input(INPUT_POST, "category_type_id");
+$service_name       = filter_input(INPUT_POST, "service_name");
 $description        = filter_input(INPUT_POST, "description");
 $service_url        = filter_input(INPUT_POST, "service_url");
 // $user_id         = filter_input(INPUT_POST, "user_id");
@@ -13,8 +14,8 @@ $service_url        = filter_input(INPUT_POST, "service_url");
 // A)category DB登録
 try {
     $pdo = db_conn();
-    $stmt = $pdo->prepare("INSERT INTO category_table (category_type_id, description, service_url) VALUES (?, ?, ?)");
-    $stmt->execute([$category_type_id, $description, $service_url]);
+    $stmt = $pdo->prepare("INSERT INTO category_table (category_type_id, service_name, description, service_url) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$category_type_id, $service_name, $description, $service_url]);
 
     // 最後に挿入されたIDを取得
     $lastInsertId = $pdo->lastInsertId();
