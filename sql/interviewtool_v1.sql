@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: 127.0.0.1
--- 生成日時: 2024-10-30 16:19:38
+-- 生成日時: 2024-11-05 06:30:59
 -- サーバのバージョン： 10.4.32-MariaDB
 -- PHP のバージョン: 8.2.12
 
@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `category_table` (
   `category_id` int(8) NOT NULL,
-  `category_type_id` tinyint(4) NOT NULL,
+  `category_type_id` int(11) NOT NULL,
   `description` text DEFAULT NULL,
   `service_url` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -52,7 +52,7 @@ INSERT INTO `category_table` (`category_id`, `category_type_id`, `description`, 
 
 CREATE TABLE `category_type_table` (
   `category_type_id` int(11) NOT NULL,
-  `category_type` tinytext NOT NULL
+  `category_type` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
