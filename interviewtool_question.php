@@ -4,38 +4,30 @@ session_start();
 sschk();
 $pdo = db_conn();
 
-$generated_question = "";
-$purpose = "";
 $category_id = $_SESSION["category_id"];
-
 $_SESSION["category_id"]    = $category_id;
 
-// OpenAI APIを使用して質問を生成する関数を呼び出し
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
-  $purpose = $_POST['purpose'];
-  $generated_question = generate_question($purpose);
-}
-
-//データ参照SQL
+// カテゴリtableの参照
 $sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" . $category_id . ";";
 $stmt_question = $pdo->prepare($sql_select_question);
 $status_question = $stmt_question->execute();
-//SQLエラー確認
+// SQLエラー確認
 if ($status_question == false) {
   sql_error($stmt_question);
 }
-//全データ取得
+// 全データ取得
 $values = "";
 $values =  $stmt_question->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
 
+// カテゴリタイプtableの参照
 $sql_select_category = "SELECT * FROM category_table c INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" . $category_id . ";";
 $stmt_category = $pdo->prepare($sql_select_category);
 $status_category = $stmt_category->execute();
-//SQLエラー確認
+// SQLエラー確認
 if ($status_category == false) {
   sql_error($stmt_category);
 }
-//全データ取得
+// 全データ取得
 $values_category = "";
 $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
 
@@ -132,6 +124,7 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
         </div>
       </div>
     </div>
+    <!-- TODO:interviewtool_scenario_add.php -->
     <a href="chat.php" class="btn btn-primary">
       チャットを開始
     </a>
@@ -160,8 +153,8 @@ TODO:シナリオ管理tableに登録
 
 TODO:配布用のURLの作成方法
 TODO:過去に生成したインタビューも編集できるように
-TODO:自分の質問の追加ができるように
 
+TODO:自分の質問の追加ができるように
 TODO:順番変えれるように ※不要かも
 
 

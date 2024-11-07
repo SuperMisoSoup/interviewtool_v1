@@ -115,11 +115,12 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
     //     echo '</a>';
     // }
     ?>
-    <!-- FIXME:表示を2x3とかにしたい -->
     <!-- </div>
-            </div>
-        </div>
-    </div> -->
+</div>
+</div>
+</div> -->
+    <!-- FIXME:表示を2x3とかにしたい -->
+    <!-- FIXME:【メモ】項目は手動で増やすコードになってます -->
 
 
 

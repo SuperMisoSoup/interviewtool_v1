@@ -57,7 +57,7 @@ function generate_question_v1($category_type, $description, $service_url)
         $user_content = $category_type . ' is the objective.';
     }
     if ($service_url !== "") {
-        $user_content .= ' The target URL is ' . $service_url . '.';
+        $user_content .= ' The target URL is ' . $service_url . '.'; // FIXME:URLの中身も見てもらうプロンプトに改修
     }
 
     $data = [

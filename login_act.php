@@ -10,7 +10,6 @@ include("funcs.php");
 $pdo = db_conn();
 
 //2. データ登録SQL作成
-//* PasswordがHash化→この段階では、PWのマッチアンマッチはわからない。この段階では条件はlogin_idのみ！！
 $stmt = $pdo->prepare("SELECT * FROM user_table WHERE login_id=:login_id");
 $stmt->bindValue(':login_id', $login_id, PDO::PARAM_STR);
 $status = $stmt->execute(); //実行
