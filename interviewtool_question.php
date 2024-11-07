@@ -4,8 +4,9 @@ session_start();
 sschk();
 $pdo = db_conn();
 
-$category_id = $_SESSION["category_id"];
-$_SESSION["category_id"]    = $category_id;
+$category_id               = $_SESSION["category_id"];
+$_SESSION["category_id"]   = $category_id;
+$new_order                 = $_POST['new_order'];
 
 // カテゴリtableの参照
 $sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" . $category_id . ";";
@@ -30,6 +31,26 @@ if ($status_category == false) {
 // 全データ取得
 $values_category = "";
 $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
+
+
+try {
+  // 新しい順番でレコードを挿入
+  $order = 1;
+  foreach ($new_order as $question_id) {
+    $stmt = $pdo->prepare('INSERT INTO scenario_table (question_id, question_order) VALUES (?, ?)');
+    $stmt->execute([$question_id, $order]);
+    $order++;
+  }
+
+  // トランザクションコミット
+  $pdo->commit();
+
+  echo '成功';
+} catch (PDOException $e) {
+  // エラー発生時のロールバック
+  $pdo->rollBack();
+  echo 'エラー: ' . $e->getMessage();
+}
 
 ?>
 
@@ -98,7 +119,7 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
         <p><span class="font-weight-bold">URL</span>：<?= h($values_category["service_url"]) ?></p>
         <hr>
         <div class="table-responsive">
-          <table class="table table-striped table-hover">
+          <table class="table table-striped table-hover" id="sortable">
             <thead>
               <tr>
                 <th>質問</th>
@@ -107,7 +128,7 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
             </thead>
             <tbody>
               <?php foreach ($values as $v) { ?>
-                <tr>
+                <tr data-question-id="<?= h($v["question_id"]) ?>">
                   <td><?= h($v["question_text"]) ?></td>
                   <td>
                     <a href="interview_question_edit.php?question_id=<?= h($v["question_id"]) ?>" class="btn btn-sm btn-outline-primary">編集</a>
@@ -131,7 +152,32 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  <script>
+    $(function() {
+      $("#sortable").sortable();
 
+      $("#sortable").on("sortupdate", function(event, ui) {
+        var new_order = [];
+        $("#sortable tr").each(function() {
+          new_order.push($(this).data("question-id"));
+        });
+
+        // PHPにAjaxで送信
+        $.ajax({
+          url: "update_order.php",
+          type: "POST",
+          data: {
+            new_order: new_order
+          },
+          success: function(data) {
+            console.log(data);
+          }
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>
