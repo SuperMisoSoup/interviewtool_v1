@@ -51,6 +51,7 @@ if ($status == false) {
 <!-- body -->
 <body class="bg-light">
     <form method="post" action="interviewtool_create.php">
+    <!-- <form method="post" action="interviewtool_create_2.php"> -->
         <div class="container px-4 py-5" id="hanging-icons">
             <h2 class="pb-2 border-bottom">
                 <?php

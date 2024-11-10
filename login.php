@@ -1,3 +1,8 @@
+<!-- 
+・ログイン画面
+  ->login_act.php
+-->
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>

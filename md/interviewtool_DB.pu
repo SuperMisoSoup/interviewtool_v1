@@ -42,29 +42,30 @@ entity question_table as "question_table\n質問" {
   --
   - category_id [FK]
   question_text
+  question_order
   delete_flg
   created_at
   deleted_at
 }
 
-entity scenario_table as "scenario_table\nシナリオ管理" {
-  + scenario_id [PK]
-  --
-  ' - category_id [FK]
-  - question_id [FK]
-  question_order
-  created_at
-  updated_at
-}
+
+' entity scenario_table as "scenario_table\nシナリオ管理" {
+'   + scenario_id [PK]
+'   --
+'   ' - category_id [FK]
+'   distributed_url
+'   created_at
+'   updated_at
+' }
 
 entity chat_log_table as "chat_log_table\nチャットログ" {
   + chat_log_id [PK]
   --
-  - scenario_id [FK]
+  ' - scenario_id [FK]
   chat_log_order
   chat_by
   chat_text
-  for_question_id
+  - for_question_id [FK]
   dig_count
   created_at
   - interviewee_id [FK]
@@ -72,9 +73,9 @@ entity chat_log_table as "chat_log_table\nチャットログ" {
 
 user_table ||-u--o{ category_table
 category_type_table ||-r--o{ category_table
-question_table ||-o{ scenario_table
+' scenario_table ||-l--o{ question_table
 category_table ||-r--o{ question_table
 interviewee_table ||-u--o{ chat_log_table
-scenario_table ||-r--o{ chat_log_table
+question_table ||-r--o{ chat_log_table
 
 @enduml

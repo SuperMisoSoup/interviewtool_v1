@@ -1,3 +1,9 @@
+<!-- 
+・ログイン処理
+  ->interviewtool_category.php
+-->
+
+
 <?php
 session_start();
 
@@ -5,26 +11,21 @@ session_start();
 $login_id = $_POST["login_id"];
 $password = $_POST["password"];
 
-//1.  DB接続します
+// A)user_tableに接続
 include("funcs.php");
 $pdo = db_conn();
 
-//2. データ登録SQL作成
 $stmt = $pdo->prepare("SELECT * FROM user_table WHERE login_id=:login_id");
 $stmt->bindValue(':login_id', $login_id, PDO::PARAM_STR);
 $status = $stmt->execute(); //実行
-
-//3. SQL実行時にエラーがある場合STOP
 if ($status == false) {
   sql_error($stmt);
 }
 
-//4. 抽出データ数を取得
-$val = $stmt->fetch();         //1レコードだけ取得する方法
+$val = $stmt->fetch(); //1レコードだけ取得
 
-//5.該当１レコードがあればSESSIONに値を代入
-//入力したPasswordと暗号化されたPasswordを比較！[戻り値：true,false]
-$pw = password_verify($password, $val["password"]); //$password = password_hash($password, PASSWORD_DEFAULT);   //パスワードハッシュ化
+$pw = password_verify($password, $val["password"]);
+//$password = password_hash($password, PASSWORD_DEFAULT);   //パスワードハッシュ化
 if ($val["resigned_flg"]) {
   //退職時(login.phpへ)
   redirect("login.php");
@@ -41,5 +42,4 @@ if ($val["resigned_flg"]) {
     redirect("login.php");
   }
 }
-exit();
 ?>
