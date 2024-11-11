@@ -75,6 +75,7 @@ function generate_question_v1($category_type, $description, $service_url)
                 "Authorization: Bearer $api_key\r\n",
             'method' => 'POST',
             'content' => json_encode($data),
+            // 'content' => json_encode($data, JSON_UNESCAPED_UNICODE)
         ],
     ];
 
