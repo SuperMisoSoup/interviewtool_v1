@@ -36,122 +36,194 @@ echo '</pre>';
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <title>デプスインタビュー</title>
+
+    <!-- Bootstrap CSSの読み込み -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
+        /* メインコンテナのスタイル。全体の幅を設定し、中央に配置 */
         .chat-container {
-            width: 90%;
+            width: 100%;
             max-width: 600px;
             margin: 20px auto;
         }
 
+        /* チャットボックスのスタイル */
         .chat-box {
             border: 1px solid #ddd;
+            /* 枠線の色 */
             height: 400px;
+            /* 高さ */
             overflow-y: auto;
-            padding: 10px;
-            margin-bottom: 10px;
+            /* 縦スクロールを有効化 */
+            padding: 15px;
+            /* 内側の余白 */
+            border-radius: 8px;
+            /* 角を丸める */
+            margin-bottom: 15px;
+            /* 下の余白 */
+            background-color: #f8f9fa;
+            /* 背景色 */
         }
 
+        /* チャットメッセージの共通スタイル */
         .message {
+            padding: 10px;
+            /* 内側の余白 */
+            border-radius: 8px;
+            /* 角を丸める */
             margin: 5px 0;
-            padding: 8px;
-            border-radius: 4px;
+            /* 上下の余白 */
+            max-width: 80%;
+            /* 最大幅を80%に設定 */
         }
 
+        /* インタビュアーのメッセージのスタイル */
         .interviewer {
             background-color: #f0f0f0;
-            margin-right: 20%;
+            /* 背景色 */
+            margin-right: auto;
+            /* 左寄せ */
         }
 
+        /* ユーザーのメッセージのスタイル */
         .user {
             background-color: #e3f2fd;
-            margin-left: 20%;
+            /* 背景色 */
+            margin-left: auto;
+            /* 右寄せ */
+        }
+
+        /* 入力エリアのグループスタイル */
+        .input-group {
+            margin-top: 10px;
+            /* 上の余白 */
+        }
+
+        /* 入力ボックスのサイズを大きく調整 */
+        #user-input {
+            height: 48px;
+            /* 高さを48pxに設定 */
         }
     </style>
 </head>
 
 <body>
     <div class="chat-container">
+        <!-- チャットメッセージが表示される領域 -->
         <div class="chat-box" id="chat-box"></div>
-        <button id="start-interview">インタビュー開始</button>
-        <div>
-            <input type="text" id="user-input" placeholder="回答を入力してください" disabled>
-            <button id="send" disabled>送信</button>
+
+        <!-- インタビュー開始ボタン -->
+        <button id="start-interview" class="btn btn-primary w-100 mb-2">インタビュー開始</button>
+
+        <!-- 入力エリア（回答入力ボックスと送信ボタン） -->
+        <div class="input-group">
+            <input type="text" id="user-input" class="form-control" placeholder="回答を入力してください" disabled> <!-- 入力ボックス、デフォルトで無効化 -->
+            <button id="send" class="btn btn-success" disabled>送信</button> <!-- 送信ボタン、デフォルトで無効化 -->
         </div>
     </div>
 
+    <!-- jQueryライブラリの読み込み -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="config.chat.js"></script>
+
+    <!-- Bootstrap JavaScript（バンドル版）を読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="config.php"></script>
+    <script src="config.chat.php"></script>
+    
+    <script>
+        // DOMの読み込み完了後にインタビューの初期化を行う
+        $(document).ready(function() {
+            const interview = new InterviewManager();
+        });
+    </script>
+
     <script>
         class InterviewManager {
             constructor() {
-                // ｛service_name｝にサービス名を
                 this.questions = <?php echo json_encode($question_texts, JSON_UNESCAPED_UNICODE); ?>;
                 this.currentQuestion = 0;
                 this.followUpCount = 0;
                 this.lastResponse = "";
                 this.isInterviewStarted = false;
                 this.conversationHistory = [];
-                this.transitionMessages = [
-                    "なるほど、理解できました。それでは次の質問に移らせていただきます。",
-                    "とても参考になりました。では、次の質問をさせていただきます。",
-                    "貴重なご意見ありがとうございます。それでは次の質問に進ませていただきます。"
-                ];
                 this.isTransitioning = false;
                 this.waitingForAnswer = false;
 
-                // ユーザー操作のイベントリスナーを初期化
                 this.initializeEventListeners();
             }
 
-            // ユーザーの入力メッセージをGPT-4に送信し、応答を生成
             async callGPT4(userInput) {
-                try {
-                    this.conversationHistory.push({
-                        role: 'user',
-                        content: userInput
-                    });
-                    const systemPrompt = this.followUpCount > 0 ?
-                        `あなたは熟練したインタビュアーです。回答の具体性を評価し、必要に応じて追加の質問を行ってください。前回の回答：「${this.lastResponse}」` :
-                        "あなたは熟練したインタビュアーです。回答の具体性を評価し、必要に応じて追加の質問を行ってください。";
+    try {
+        if (this.followUpCount > 2) {
+            return;
+        }
 
-                    const response = await $.ajax({
-                        url: CONFIG.API_ENDPOINT,
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${CONFIG.API_KEY}`
-                        },
-                        data: JSON.stringify({
-                            model: CONFIG.MODEL,
-                            messages: [{
-                                    role: 'system',
-                                    content: systemPrompt
-                                },
-                                ...this.conversationHistory
-                            ],
-                            max_tokens: 200,
-                            temperature: 0.7
-                        })
-                    });
+        this.conversationHistory.push({
+            role: 'user',
+            content: userInput
+        });
 
-                    // アシスタントの応答を会話履歴に追加
-                    this.conversationHistory.push({
-                        role: 'assistant',
-                        content: response.choices[0].message.content
-                    });
-                    return response.choices[0].message.content;
-                } catch (error) {
-                    console.error('Error:', error);
-                    return "申し訳ありません。エラーが発生しました。";
-                }
-            }
+        const systemPrompt = `あなたは熟練したインタビュアーです。これは${this.followUpCount}回目のフォローアップです。
+        ${this.followUpCount === 1 || this.followUpCount === 2 ? 
+        '回答の具体性を評価し、より詳しい情報を引き出すための質問を1つだけ簡潔に行ってください。' : 
+        '初回の質問です。回答を確認してください。'}
+        前回の回答：「${this.lastResponse}」`;
 
-            // チャット表示にメッセージを追加し、ユーザーかアシスタントかを区別
+        // APIに送信するデータを確認用として画面に表示
+        this.addMessage(`APIに送信するデータ: ${JSON.stringify({
+            model: CONFIG.MODEL,
+            messages: [{
+                    role: 'system',
+                    content: systemPrompt
+                },
+                ...this.conversationHistory
+            ],
+            max_tokens: 200,
+            temperature: 0.7
+        }, null, 2)}`, false);
+
+        const response = await $.ajax({
+            url: CONFIG.API_ENDPOINT,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.API_KEY}`
+            },
+            data: JSON.stringify({
+                model: CONFIG.MODEL,
+                messages: [{
+                        role: 'system',
+                        content: systemPrompt
+                    },
+                    ...this.conversationHistory
+                ],
+                max_tokens: 200,
+                temperature: 0.7
+            })
+        });
+
+        this.conversationHistory.push({
+            role: 'assistant',
+            content: response.choices[0].message.content
+        });
+        return response.choices[0].message.content;
+
+    } catch (error) {
+        console.error('Error:', error);
+
+        // APIエラー内容を画面に表示
+        this.addMessage(`APIエラーが発生しました: ${error.responseText || error.statusText}`, false);
+        return "申し訳ありません。エラーが発生しました。";
+    }
+}
+
             addMessage(message, isUser) {
                 const messageDiv = $('<div></div>')
                     .addClass('message')
@@ -161,60 +233,46 @@ echo '</pre>';
                 $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
             }
 
-            // 現在の質問をユーザーに表示
             showQuestionNumber() {
                 if (this.currentQuestion < this.questions.length) {
                     this.addMessage(this.questions[this.currentQuestion], false);
                 }
             }
 
-            // 応答を処理し、フォローアップ質問が必要か判断
             async handleResponse(response) {
                 if (this.isTransitioning) return;
 
-                let cleanResponse = response;
-                let shouldFollowUp = true;
-                let isWaitingForAnswer = false;
-
-                // 応答内の特別なタグを処理
-                if (response.includes('[NO_FOLLOWUP]')) {
-                    cleanResponse = response.replace('[NO_FOLLOWUP]', '').trim();
-                    shouldFollowUp = false;
-                }
-                if (response.includes('[WAITING_ANSWER]')) {
-                    cleanResponse = response.replace('[WAITING_ANSWER]', '').trim();
-                    isWaitingForAnswer = true;
-                }
-
+                let cleanResponse = response.trim();
                 this.lastResponse = cleanResponse;
-                this.addMessage(cleanResponse, false);
 
-                if (isWaitingForAnswer) {
+                // フォローアップ質問の場合のみ応答を表示
+                if (this.followUpCount < 2) {
+                    this.addMessage(cleanResponse, false);
+                }
+
+                this.followUpCount++;
+
+                if (this.followUpCount < 2) {
+                    this.enableInput();
+                } else if (this.followUpCount === 2) {
                     this.waitingForAnswer = true;
                     this.enableInput();
-                } else if (shouldFollowUp && this.followUpCount < 2) {
-                    this.followUpCount++;
-                    this.enableInput();
-                } else {
+                } else if (this.waitingForAnswer) {
+                    this.waitingForAnswer = false;
                     await this.transitionToNextQuestion();
                 }
             }
 
-            // 次の質問に移行
             async transitionToNextQuestion() {
-                if (this.waitingForAnswer) return;
-
                 this.isTransitioning = true;
                 this.followUpCount = 0;
                 this.currentQuestion++;
                 this.conversationHistory = [];
-                this.waitingForAnswer = false;
 
                 if (this.currentQuestion < this.questions.length) {
-                    const transitionMessage = this.transitionMessages[Math.floor(Math.random() * this.transitionMessages.length)];
                     await new Promise(resolve => {
                         setTimeout(() => {
-                            this.addMessage(transitionMessage, false);
+                            this.addMessage("貴重なご意見ありがとうございます。それでは次の質問に進ませていただきます。", false);
                             setTimeout(() => {
                                 this.isTransitioning = false;
                                 this.askNextQuestion();
@@ -223,13 +281,12 @@ echo '</pre>';
                         }, 1000);
                     });
                 } else {
-                    this.addMessage("インタビューにご協力いただき、誠にありがとうございました。貴重なご意見をお聞かせいただき、大変参考になりました。", false);
+                    this.addMessage("インタビューにご協力いただき、誠にありがとうございました。", false);
                     this.disableInput();
                     $('#start-interview').text('インタビュー終了').prop('disabled', true);
                 }
             }
 
-            // 次の質問を表示
             askNextQuestion() {
                 setTimeout(() => {
                     this.showQuestionNumber();
@@ -237,7 +294,6 @@ echo '</pre>';
                 }, 500);
             }
 
-            // インタビューセッションを開始
             startInterview() {
                 if (!this.isInterviewStarted) {
                     this.isInterviewStarted = true;
@@ -248,19 +304,16 @@ echo '</pre>';
                 }
             }
 
-            // ユーザーの入力を有効化（質問に答えられる状態にする）
             enableInput() {
                 $('#user-input').prop('disabled', false).focus();
                 $('#send').prop('disabled', false);
             }
 
-            // ユーザーの入力を無効化（応答待機状態など）
             disableInput() {
                 $('#user-input').prop('disabled', true);
                 $('#send').prop('disabled', true);
             }
 
-            // ユーザー操作のイベントリスナーを初期化
             initializeEventListeners() {
                 $('#start-interview').click(() => {
                     $('#start-interview').prop('disabled', true);
@@ -273,12 +326,8 @@ echo '</pre>';
                         this.addMessage(userInput, true);
                         this.disableInput();
                         $('#user-input').val('');
+
                         const response = await this.callGPT4(userInput);
-
-                        if (this.waitingForAnswer) {
-                            this.waitingForAnswer = false;
-                        }
-
                         await this.handleResponse(response);
                     }
                 });
@@ -291,12 +340,7 @@ echo '</pre>';
             }
         }
     </script>
-    <script>
-        // インタビューマネージャーの初期化
-        $(document).ready(function() {
-            const interview = new InterviewManager();
-        });
-    </script>
+
 </body>
 
 </html>
