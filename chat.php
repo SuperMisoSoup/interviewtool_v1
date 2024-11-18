@@ -3,7 +3,10 @@
 ・chatに流し込む質問を順番通りに取得する
 A)question_tableから順番通りに質問配列を取得 -> $question_texts
 
-・OpenAIと正しく連携
+B)チャットを実行
+
+C)チャットログをDBに保存
+・回答の都度保存する
 
 -->
 
@@ -30,9 +33,11 @@ if ($status == false) {
 $values = $stmt->fetchAll(PDO::FETCH_ASSOC); // 全レコードを取得
 $question_texts = array_column($values, 'question_text');
 
-echo '<pre>';
-var_dump($question_texts);
-echo '</pre>';
+// // 確認用
+// echo '<pre>';
+// var_dump($question_texts);
+// echo '</pre>';
+// 
 ?>
 
 <!DOCTYPE html>
@@ -49,7 +54,7 @@ echo '</pre>';
         /* メインコンテナのスタイル。全体の幅を設定し、中央に配置 */
         .chat-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 40%;
             margin: 20px auto;
         }
 
@@ -57,7 +62,7 @@ echo '</pre>';
         .chat-box {
             border: 1px solid #ddd;
             /* 枠線の色 */
-            height: 400px;
+            height: 700px;
             /* 高さ */
             overflow-y: auto;
             /* 縦スクロールを有効化 */
@@ -128,18 +133,14 @@ echo '</pre>';
         </div>
     </div>
 
-    <!-- jQueryライブラリの読み込み -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Bootstrap JavaScript（バンドル版）を読み込み -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="config.php"></script>
     <script>
         const CONFIG = {
             API_ENDPOINT: 'https://api.openai.com/v1/chat/completions',
-            API_KEY: '<?= htmlspecialchars(OPENAI_API_KEY, ENT_QUOTES, 'UTF-8') ?>', // PHPからAPIキーを直接埋め込み
-            MODEL: 'gpt-4o-mini', // 使用するモデル名
+            API_KEY: '<?= htmlspecialchars(OPENAI_API_KEY, ENT_QUOTES, 'UTF-8') ?>',
+            MODEL: 'gpt-4o-mini',
             SYSTEM_PROMPT: 'あなたはマーケターで、デプスインタビューの専門家です。以下のテーマに基づいて、サービスの未利用者向けに日本語でインタビューを実施してください。テーマ: 動向、競合調査、認知、入会検討、同様サービスの利用頻度や利用シーン。指定の質問１０個は必ず質問して。回答に応じて具体的な深堀もして'
         };
     </script>
@@ -152,16 +153,18 @@ echo '</pre>';
     </script>
 
     <script>
+        // B)チャットを実行
         class InterviewManager {
             constructor() {
                 this.questions = <?php echo json_encode($question_texts, JSON_UNESCAPED_UNICODE); ?>;
-                this.currentQuestion = 0;
+                this.currentQuestion = 0; // 質問のindex
                 this.followUpCount = 0; // 深堀回数
                 this.lastResponse = ""; // 前回の回答
-                this.isInterviewStarted = false;
+                this.isInterviewStarted = false; //インタビュー開始かどうか
                 this.conversationHistory = []; // json会話履歴({role:user, content:〇〇}, ...)
-                this.isTransitioning = false;
-                this.waitingForAnswer = false;
+                this.isTransitioning = false; // インタビュー進行中かどうか
+                this.waitingForAnswer = false; // ユーザが回答入力中かどうか
+                this.chatLogOrder = 1; // 各チャットログごとにインクリメント
 
                 this.initializeEventListeners();
             }
@@ -208,7 +211,9 @@ echo '</pre>';
                         role: 'assistant',
                         content: response.choices[0].message.content
                     });
+
                     return response.choices[0].message.content;
+
 
                 } catch (error) {
                     console.error('Error:', error);
@@ -243,8 +248,17 @@ echo '</pre>';
                     this.addMessage(cleanResponse, false);
                 }
 
-                this.followUpCount++;
+                // C)チャットログを保存
+                // ユーザー回答をDBに保存
+                await this.saveAnswerToDB("user", this.lastResponse, this.currentQuestion, this.followUpCount);
+                // インタビュアーの質問応答もDBに保存
+                this.conversationHistory.push({
+                    role: 'assistant',
+                    content: response
+                });
+                await this.saveAnswerToDB("assistant", response, this.currentQuestion, this.followUpCount);
 
+                this.followUpCount++;
                 if (this.followUpCount < 2) {
                     this.enableInput();
                 } else if (this.followUpCount === 2) {
@@ -253,6 +267,38 @@ echo '</pre>';
                 } else if (this.waitingForAnswer) {
                     this.waitingForAnswer = false;
                     await this.transitionToNextQuestion();
+                }
+            }
+
+            // C)チャットログを保存
+            async saveAnswerToDB(chatBy, chatText, questionId, digCount) {
+                try {
+                    await $.ajax({
+                        url: 'chat_save_log.php',
+                        method: 'POST',
+                        data: {
+                            chat_log_order: this.chatLogOrder,
+                            chat_by: chatBy,
+                            chat_text: chatText,
+                            for_question_id: questionId,
+                            dig_count: digCount
+                        }
+                    });
+                    //         this.chatLogOrder++; // 次のチャットログのためにインクリメント
+                    //     } catch (error) {
+                    //         console.error("Error saving answer:", error);
+                    //     }
+                    // }
+                    
+                    // 成功・エラーの判定
+                    if (response.status === "success") {
+                        console.log("データが正常に保存されました");
+                        this.chatLogOrder++;
+                    } else {
+                        console.error("DB保存エラー:", response.message);
+                    }
+                } catch (error) {
+                    console.error("通信エラー:", error);
                 }
             }
 
@@ -274,7 +320,7 @@ echo '</pre>';
                         }, 1000);
                     });
                 } else {
-                    this.addMessage("インタビューにご協力いただき、誠にありがとうございました。", false);
+                    this.addMessage("インタビューにご協力いただき、誠にありがとうございました。画面を閉じてください。", false);
                     this.disableInput();
                     $('#start-interview').text('インタビュー終了').prop('disabled', true);
                 }
