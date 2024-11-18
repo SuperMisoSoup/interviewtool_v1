@@ -124,9 +124,9 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
             </tbody>
           </table>
         </div>
+        <a href="interview_question_add.php" class="btn btn-sm btn-outline-danger">質問を追加</a>
       </div>
     </div>
-    <a href="interview_question_add.php" class="btn btn-sm btn-outline-danger">質問を追加</a>
     <button id="saveOrderBtn" class="btn btn-primary">チャットを開始</button>
 
   </div>

@@ -135,8 +135,15 @@ echo '</pre>';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="config.php"></script>
-    <script src="config.chat.php"></script>
-    
+    <script>
+        const CONFIG = {
+            API_ENDPOINT: 'https://api.openai.com/v1/chat/completions',
+            API_KEY: '<?= htmlspecialchars(OPENAI_API_KEY, ENT_QUOTES, 'UTF-8') ?>', // PHPからAPIキーを直接埋め込み
+            MODEL: 'gpt-4o-mini', // 使用するモデル名
+            SYSTEM_PROMPT: 'あなたはマーケターで、デプスインタビューの専門家です。以下のテーマに基づいて、サービスの未利用者向けに日本語でインタビューを実施してください。テーマ: 動向、競合調査、認知、入会検討、同様サービスの利用頻度や利用シーン。指定の質問１０個は必ず質問して。回答に応じて具体的な深堀もして'
+        };
+    </script>
+
     <script>
         // DOMの読み込み完了後にインタビューの初期化を行う
         $(document).ready(function() {
@@ -149,10 +156,10 @@ echo '</pre>';
             constructor() {
                 this.questions = <?php echo json_encode($question_texts, JSON_UNESCAPED_UNICODE); ?>;
                 this.currentQuestion = 0;
-                this.followUpCount = 0;
-                this.lastResponse = "";
+                this.followUpCount = 0; // 深堀回数
+                this.lastResponse = ""; // 前回の回答
                 this.isInterviewStarted = false;
-                this.conversationHistory = [];
+                this.conversationHistory = []; // json会話履歴({role:user, content:〇〇}, ...)
                 this.isTransitioning = false;
                 this.waitingForAnswer = false;
 
@@ -160,69 +167,55 @@ echo '</pre>';
             }
 
             async callGPT4(userInput) {
-    try {
-        if (this.followUpCount > 2) {
-            return;
-        }
+                try {
+                    if (this.followUpCount > 2) {
+                        return;
+                    }
 
-        this.conversationHistory.push({
-            role: 'user',
-            content: userInput
-        });
+                    this.conversationHistory.push({
+                        role: 'user',
+                        content: userInput
+                    });
 
-        const systemPrompt = `あなたは熟練したインタビュアーです。これは${this.followUpCount}回目のフォローアップです。
+                    const systemPrompt = `あなたは熟練したインタビュアーです。これは${this.followUpCount}回目のフォローアップです。
         ${this.followUpCount === 1 || this.followUpCount === 2 ? 
         '回答の具体性を評価し、より詳しい情報を引き出すための質問を1つだけ簡潔に行ってください。' : 
         '初回の質問です。回答を確認してください。'}
         前回の回答：「${this.lastResponse}」`;
 
-        // APIに送信するデータを確認用として画面に表示
-        this.addMessage(`APIに送信するデータ: ${JSON.stringify({
-            model: CONFIG.MODEL,
-            messages: [{
-                    role: 'system',
-                    content: systemPrompt
-                },
-                ...this.conversationHistory
-            ],
-            max_tokens: 200,
-            temperature: 0.7
-        }, null, 2)}`, false);
 
-        const response = await $.ajax({
-            url: CONFIG.API_ENDPOINT,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${CONFIG.API_KEY}`
-            },
-            data: JSON.stringify({
-                model: CONFIG.MODEL,
-                messages: [{
-                        role: 'system',
-                        content: systemPrompt
-                    },
-                    ...this.conversationHistory
-                ],
-                max_tokens: 200,
-                temperature: 0.7
-            })
-        });
+                    const response = await $.ajax({
+                        url: CONFIG.API_ENDPOINT,
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${CONFIG.API_KEY}`
+                        },
+                        data: JSON.stringify({
+                            model: CONFIG.MODEL,
+                            messages: [{
+                                    role: 'system',
+                                    content: systemPrompt
+                                },
+                                ...this.conversationHistory
+                            ],
+                            max_tokens: 200,
+                            temperature: 0.7
+                        })
+                    });
 
-        this.conversationHistory.push({
-            role: 'assistant',
-            content: response.choices[0].message.content
-        });
-        return response.choices[0].message.content;
+                    this.conversationHistory.push({
+                        role: 'assistant',
+                        content: response.choices[0].message.content
+                    });
+                    return response.choices[0].message.content;
 
-    } catch (error) {
-        console.error('Error:', error);
-
-        // APIエラー内容を画面に表示
-        this.addMessage(`APIエラーが発生しました: ${error.responseText || error.statusText}`, false);
-        return "申し訳ありません。エラーが発生しました。";
-    }
-}
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.addMessage(errorMessage, false);
+                    return "申し訳ありません。エラーが発生しました。";
+                }
+            }
 
             addMessage(message, isUser) {
                 const messageDiv = $('<div></div>')
