@@ -15,7 +15,7 @@ C)チャットログをDBに保存
 <?php
 include("funcs.php");
 session_start();
-sschk();
+sschk(); //FIXME:配布URLとするならsschkは不要？
 $pdo = db_conn();
 
 $category_id = $_SESSION["category_id"];
@@ -33,11 +33,11 @@ if ($status == false) {
 $values = $stmt->fetchAll(PDO::FETCH_ASSOC); // 全レコードを取得
 $question_texts = array_column($values, 'question_text');
 
-// // 確認用
-// echo '<pre>';
-// var_dump($question_texts);
-// echo '</pre>';
-// 
+// 確認用
+echo '<pre>';
+var_dump($question_texts);
+echo '</pre>';
+
 ?>
 
 <!DOCTYPE html>
@@ -247,7 +247,7 @@ $question_texts = array_column($values, 'question_text');
                 if (this.followUpCount < 2) {
                     this.addMessage(cleanResponse, false);
                 }
-
+                
                 // C)チャットログを保存
                 // ユーザー回答をDBに保存
                 await this.saveAnswerToDB("user", this.lastResponse, this.currentQuestion, this.followUpCount);
@@ -284,99 +284,87 @@ $question_texts = array_column($values, 'question_text');
                             dig_count: digCount
                         }
                     });
-                    //         this.chatLogOrder++; // 次のチャットログのためにインクリメント
-                    //     } catch (error) {
-                    //         console.error("Error saving answer:", error);
-                    //     }
-                    // }
-                    
-                    // 成功・エラーの判定
-                    if (response.status === "success") {
-                        console.log("データが正常に保存されました");
-                        this.chatLogOrder++;
-                    } else {
-                        console.error("DB保存エラー:", response.message);
-                    }
+                    this.chatLogOrder++; // 次のチャットログのためにインクリメント
                 } catch (error) {
-                    console.error("通信エラー:", error);
+                    console.error("Error saving answer:", error);
                 }
             }
 
-            async transitionToNextQuestion() {
-                this.isTransitioning = true;
-                this.followUpCount = 0;
-                this.currentQuestion++;
-                this.conversationHistory = [];
+        async transitionToNextQuestion() {
+            this.isTransitioning = true;
+            this.followUpCount = 0;
+            this.currentQuestion++;
+            this.conversationHistory = [];
 
-                if (this.currentQuestion < this.questions.length) {
-                    await new Promise(resolve => {
-                        setTimeout(() => {
-                            this.addMessage("貴重なご意見ありがとうございます。それでは次の質問に進ませていただきます。", false);
-                            setTimeout(() => {
-                                this.isTransitioning = false;
-                                this.askNextQuestion();
-                                resolve();
-                            }, 1500);
-                        }, 1000);
-                    });
-                } else {
-                    this.addMessage("インタビューにご協力いただき、誠にありがとうございました。画面を閉じてください。", false);
-                    this.disableInput();
-                    $('#start-interview').text('インタビュー終了').prop('disabled', true);
-                }
-            }
-
-            askNextQuestion() {
-                setTimeout(() => {
-                    this.showQuestionNumber();
-                    this.enableInput();
-                }, 500);
-            }
-
-            startInterview() {
-                if (!this.isInterviewStarted) {
-                    this.isInterviewStarted = true;
-                    this.addMessage("本日は、{service_name}に関するインタビューにご協力いただき、ありがとうございます。できるだけリラックスしてお答えください。", false);
+            if (this.currentQuestion < this.questions.length) {
+                await new Promise(resolve => {
                     setTimeout(() => {
-                        this.askNextQuestion();
-                    }, 1500);
+                        this.addMessage("貴重なご意見ありがとうございます。それでは次の質問に進ませていただきます。", false);
+                        setTimeout(() => {
+                            this.isTransitioning = false;
+                            this.askNextQuestion();
+                            resolve();
+                        }, 1500);
+                    }, 1000);
+                });
+            } else {
+                this.addMessage("インタビューにご協力いただき、誠にありがとうございました。画面を閉じてください。", false);
+                this.disableInput();
+                $('#start-interview').text('インタビュー終了').prop('disabled', true);
+            }
+        }
+
+        askNextQuestion() {
+            setTimeout(() => {
+                this.showQuestionNumber();
+                this.enableInput();
+            }, 500);
+        }
+
+        startInterview() {
+            if (!this.isInterviewStarted) {
+                this.isInterviewStarted = true;
+                this.addMessage("本日は、{service_name}に関するインタビューにご協力いただき、ありがとうございます。できるだけリラックスしてお答えください。", false);
+                setTimeout(() => {
+                    this.askNextQuestion();
+                }, 1500);
+            }
+        }
+
+        enableInput() {
+            $('#user-input').prop('disabled', false).focus();
+            $('#send').prop('disabled', false);
+        }
+
+        disableInput() {
+            $('#user-input').prop('disabled', true);
+            $('#send').prop('disabled', true);
+        }
+
+        initializeEventListeners() {
+            $('#start-interview').click(() => {
+                $('#start-interview').prop('disabled', true);
+                this.startInterview();
+            });
+
+            $('#send').click(async () => {
+                const userInput = $('#user-input').val().trim();
+                if (userInput && !this.isTransitioning) {
+                    this.addMessage(userInput, true);
+                    this.disableInput();
+                    $('#user-input').val('');
+
+                    const response = await this.callGPT4(userInput);
+                    await this.handleResponse(response);
                 }
-            }
+            });
 
-            enableInput() {
-                $('#user-input').prop('disabled', false).focus();
-                $('#send').prop('disabled', false);
-            }
-
-            disableInput() {
-                $('#user-input').prop('disabled', true);
-                $('#send').prop('disabled', true);
-            }
-
-            initializeEventListeners() {
-                $('#start-interview').click(() => {
-                    $('#start-interview').prop('disabled', true);
-                    this.startInterview();
-                });
-
-                $('#send').click(async () => {
-                    const userInput = $('#user-input').val().trim();
-                    if (userInput && !this.isTransitioning) {
-                        this.addMessage(userInput, true);
-                        this.disableInput();
-                        $('#user-input').val('');
-
-                        const response = await this.callGPT4(userInput);
-                        await this.handleResponse(response);
-                    }
-                });
-
-                $('#user-input').keypress((e) => {
-                    if (e.which == 13 && !$('#send').prop('disabled')) {
-                        $('#send').click();
-                    }
-                });
-            }
+            $('#user-input').keypress((e) => {
+                if (e.which == 13 && !$('#send').prop('disabled')) {
+                    $('#send').click();
+                }
+            });
+        }
         }
     </script>
 
