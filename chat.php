@@ -10,8 +10,6 @@ C)チャットログをDBに保存
 
 -->
 
-
-
 <?php
 include("funcs.php");
 session_start();
@@ -39,10 +37,10 @@ foreach ($values as $value) {
     ];
 }
 
-// 確認用
-echo '<pre>';
-var_dump($questions);
-echo '</pre>';
+// // 確認用
+// echo '<pre>';
+// var_dump($questions);
+// echo '</pre>';
 
 ?>
 
