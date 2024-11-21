@@ -22,7 +22,7 @@ $sql = "INSERT INTO chat_log_table (chat_log_order, chat_by, chat_text, for_ques
 // FIXME chat_log_orderがカウントアップしてない
 // FIXME chat_byがNull
 // FIXME chat_textがNull
-// FIXME: assistantの質問→userの回答→深掘り質問1→回答1→深掘り質問2→回答2 を保存したい
+// FIXME assistantの質問→userの回答→深掘り質問1→回答1→深掘り質問2→回答2 を保存したい
 // FIXME: for_question_idが連携されてない →interviewtool_questionから連携させる
 
 $stmt = $pdo->prepare($sql);

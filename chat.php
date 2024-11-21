@@ -33,10 +33,10 @@ if ($status == false) {
 $values = $stmt->fetchAll(PDO::FETCH_ASSOC); // 全レコードを取得
 $question_texts = array_column($values, 'question_text');
 
-// 確認用
-echo '<pre>';
-var_dump($question_texts);
-echo '</pre>';
+// // 確認用
+// echo '<pre>';
+// var_dump($question_texts);
+// echo '</pre>';
 
 ?>
 
@@ -141,7 +141,7 @@ echo '</pre>';
             API_ENDPOINT: 'https://api.openai.com/v1/chat/completions',
             API_KEY: '<?= htmlspecialchars(OPENAI_API_KEY, ENT_QUOTES, 'UTF-8') ?>',
             MODEL: 'gpt-4o-mini',
-            SYSTEM_PROMPT: 'あなたはマーケターで、デプスインタビューの専門家です。以下のテーマに基づいて、サービスの未利用者向けに日本語でインタビューを実施してください。テーマ: 動向、競合調査、認知、入会検討、同様サービスの利用頻度や利用シーン。指定の質問１０個は必ず質問して。回答に応じて具体的な深堀もして'
+            SYSTEM_PROMPT: 'あなたはマーケターで、デプスインタビューの専門家です。以下のテーマに基づいて、サービスの未利用者向けに日本語でインタビューを実施してください。テーマ: 動向、競合調査、認知、入会検討、同様サービスの利用頻度や利用シーン。指定の質問は必ず質問して。回答に応じて具体的な深堀もして'
         };
     </script>
 
@@ -162,8 +162,6 @@ echo '</pre>';
                 this.lastResponse = ""; // 前回の回答
                 this.isInterviewStarted = false; //インタビュー開始かどうか
                 this.conversationHistory = []; // json会話履歴({role:user, content:〇〇}, ...)
-                // this.isTransitioning = false; // インタビュー進行中かどうか
-                // this.waitingForAnswer = false; // ユーザが回答入力中かどうか
                 this.chatLogOrder = 1; // 各チャットログごとにインクリメント
 
                 this.initializeEventListeners();
@@ -245,12 +243,13 @@ echo '</pre>';
 
                 const assistantResponse = await this.callGPT4(userInput);
 
+                this.followUpCount++;
+
                 // フォローアップ質問の場合のみ応答を表示
-                if (assistantResponse && this.followUpCount < 2) {
+                if (assistantResponse && this.followUpCount < 3) {
                     this.addMessage(assistantResponse, false);
                 }
 
-                this.followUpCount++;
                 if (this.followUpCount < 2) {
                     this.enableInput();
                 } else if (this.followUpCount === 2) {
