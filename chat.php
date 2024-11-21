@@ -31,12 +31,18 @@ if ($status == false) {
 }
 // 全データ取得
 $values = $stmt->fetchAll(PDO::FETCH_ASSOC); // 全レコードを取得
-$question_texts = array_column($values, 'question_text');
+$questions = [];
+foreach ($values as $value) {
+    $questions[$value['question_order']] = [
+        'question_id' => $value['question_id'],
+        'question_text' => $value['question_text']
+    ];
+}
 
-// // 確認用
-// echo '<pre>';
-// var_dump($question_texts);
-// echo '</pre>';
+// 確認用
+echo '<pre>';
+var_dump($questions);
+echo '</pre>';
 
 ?>
 
@@ -156,7 +162,7 @@ $question_texts = array_column($values, 'question_text');
         // B)チャットを実行
         class InterviewManager {
             constructor() {
-                this.questions = <?php echo json_encode($question_texts, JSON_UNESCAPED_UNICODE); ?>;
+                this.questions = <?php echo json_encode($questions); ?>;
                 this.currentQuestion = 0; // 質問のindex
                 this.followUpCount = 0; // 深堀回数
                 this.lastResponse = ""; // 前回の回答
@@ -230,7 +236,7 @@ $question_texts = array_column($values, 'question_text');
                 // DBにメッセージを保存
                 if (saveToDB) {
                     const chatBy = isUser ? 'user' : 'assistant';
-                    const questionId = this.currentQuestion;
+                    const questionId = this.questions[this.currentQuestion + 1].question_id;
                     const digCount = this.followUpCount;
 
                     this.saveAnswerToDB(chatBy, message, questionId, digCount);
@@ -267,7 +273,7 @@ $question_texts = array_column($values, 'question_text');
                 this.currentQuestion++;
                 this.conversationHistory = [];
 
-                if (this.currentQuestion < this.questions.length) {
+                if (this.currentQuestion < Object.keys(this.questions).length) {
                     await new Promise(resolve => {
                         setTimeout(() => {
                             this.addMessage("貴重なご意見ありがとうございます。それでは次の質問に進ませていただきます。", false, false);
@@ -286,9 +292,10 @@ $question_texts = array_column($values, 'question_text');
             }
 
             async askNextQuestion() {
-                if (this.currentQuestion < this.questions.length) {
-                    const question = this.questions[this.currentQuestion];
-                    this.addMessage(question, false); // 質問も保存
+                if (this.currentQuestion < Object.keys(this.questions).length) {
+                    const questionIndex = this.currentQuestion + 1;
+                    const question = this.questions[questionIndex];
+                    this.addMessage(question.question_text, false); // 質問も保存
                     this.enableInput();
                 }
             }
