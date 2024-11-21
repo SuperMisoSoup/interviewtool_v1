@@ -162,8 +162,8 @@ echo '</pre>';
                 this.lastResponse = ""; // 前回の回答
                 this.isInterviewStarted = false; //インタビュー開始かどうか
                 this.conversationHistory = []; // json会話履歴({role:user, content:〇〇}, ...)
-                this.isTransitioning = false; // インタビュー進行中かどうか
-                this.waitingForAnswer = false; // ユーザが回答入力中かどうか
+                // this.isTransitioning = false; // インタビュー進行中かどうか
+                // this.waitingForAnswer = false; // ユーザが回答入力中かどうか
                 this.chatLogOrder = 1; // 各チャットログごとにインクリメント
 
                 this.initializeEventListeners();
@@ -181,11 +181,10 @@ echo '</pre>';
                     });
 
                     const systemPrompt = `あなたは熟練したインタビュアーです。これは${this.followUpCount}回目のフォローアップです。
-        ${this.followUpCount === 1 || this.followUpCount === 2 ? 
-        '回答の具体性を評価し、より詳しい情報を引き出すための質問を1つだけ簡潔に行ってください。' : 
-        '初回の質問です。回答を確認してください。'}
-        前回の回答：「${this.lastResponse}」`;
-
+                        ${this.followUpCount === 1 || this.followUpCount === 2 ? 
+                        '回答の具体性を評価し、より詳しい情報を引き出すための質問を1つだけ簡潔に行ってください。' : 
+                        '初回の質問です。回答を確認してください。'}
+                        前回の回答：「${this.lastResponse}」`;
 
                     const response = await $.ajax({
                         url: CONFIG.API_ENDPOINT,
@@ -207,13 +206,13 @@ echo '</pre>';
                         })
                     });
 
+                    const assistantReply = response.choices[0].message.content;
                     this.conversationHistory.push({
                         role: 'assistant',
-                        content: response.choices[0].message.content
+                        content: assistantReply
                     });
 
-                    return response.choices[0].message.content;
-
+                    return assistantReply;
 
                 } catch (error) {
                     console.error('Error:', error);
@@ -222,41 +221,34 @@ echo '</pre>';
                 }
             }
 
-            addMessage(message, isUser) {
+            addMessage(message, isUser, saveToDB = true) {
                 const messageDiv = $('<div></div>')
                     .addClass('message')
                     .addClass(isUser ? 'user' : 'interviewer')
                     .text(message);
                 $('#chat-box').append(messageDiv);
                 $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
-            }
 
-            showQuestionNumber() {
-                if (this.currentQuestion < this.questions.length) {
-                    this.addMessage(this.questions[this.currentQuestion], false);
+                // DBにメッセージを保存
+                if (saveToDB) {
+                    const chatBy = isUser ? 'user' : 'assistant';
+                    const questionId = this.currentQuestion;
+                    const digCount = this.followUpCount;
+
+                    this.saveAnswerToDB(chatBy, message, questionId, digCount);
                 }
             }
 
-            async handleResponse(response) {
-                if (this.isTransitioning) return;
+            async handleResponse(userInput) {
+                this.lastResponse = userInput; // userの入力を保持
+                this.addMessage(userInput, true); // `user`の回答を表示し、DBに保存
 
-                let cleanResponse = response.trim();
-                this.lastResponse = cleanResponse;
+                const assistantResponse = await this.callGPT4(userInput);
 
                 // フォローアップ質問の場合のみ応答を表示
-                if (this.followUpCount < 2) {
-                    this.addMessage(cleanResponse, false);
+                if (assistantResponse && this.followUpCount < 2) {
+                    this.addMessage(assistantResponse, false);
                 }
-                
-                // C)チャットログを保存
-                // ユーザー回答をDBに保存
-                await this.saveAnswerToDB("user", this.lastResponse, this.currentQuestion, this.followUpCount);
-                // インタビュアーの質問応答もDBに保存
-                this.conversationHistory.push({
-                    role: 'assistant',
-                    content: response
-                });
-                await this.saveAnswerToDB("assistant", response, this.currentQuestion, this.followUpCount);
 
                 this.followUpCount++;
                 if (this.followUpCount < 2) {
@@ -267,6 +259,48 @@ echo '</pre>';
                 } else if (this.waitingForAnswer) {
                     this.waitingForAnswer = false;
                     await this.transitionToNextQuestion();
+                }
+            }
+
+            async transitionToNextQuestion() {
+                this.isTransitioning = true;
+                this.followUpCount = 0;
+                this.currentQuestion++;
+                this.conversationHistory = [];
+
+                if (this.currentQuestion < this.questions.length) {
+                    await new Promise(resolve => {
+                        setTimeout(() => {
+                            this.addMessage("貴重なご意見ありがとうございます。それでは次の質問に進ませていただきます。", false, false);
+                            setTimeout(() => {
+                                this.isTransitioning = false;
+                                this.askNextQuestion();
+                                resolve();
+                            }, 1500);
+                        }, 1000);
+                    });
+                } else {
+                    this.addMessage("インタビューにご協力いただき、誠にありがとうございました。画面を閉じてください。", false, false);
+                    this.disableInput();
+                    $('#start-interview').text('インタビュー終了').prop('disabled', true);
+                }
+            }
+
+            async askNextQuestion() {
+                if (this.currentQuestion < this.questions.length) {
+                    const question = this.questions[this.currentQuestion];
+                    this.addMessage(question, false); // 質問も保存
+                    this.enableInput();
+                }
+            }
+
+            startInterview() {
+                if (!this.isInterviewStarted) {
+                    this.isInterviewStarted = true;
+                    this.addMessage("本日は、{service_name}に関するインタビューにご協力いただき、ありがとうございます。できるだけリラックスしてお答えください。", false, false);
+                    setTimeout(() => {
+                        this.askNextQuestion();
+                    }, 1500);
                 }
             }
 
@@ -290,81 +324,37 @@ echo '</pre>';
                 }
             }
 
-        async transitionToNextQuestion() {
-            this.isTransitioning = true;
-            this.followUpCount = 0;
-            this.currentQuestion++;
-            this.conversationHistory = [];
+            enableInput() {
+                $('#user-input').prop('disabled', false).focus();
+                $('#send').prop('disabled', false);
+            }
 
-            if (this.currentQuestion < this.questions.length) {
-                await new Promise(resolve => {
-                    setTimeout(() => {
-                        this.addMessage("貴重なご意見ありがとうございます。それでは次の質問に進ませていただきます。", false);
-                        setTimeout(() => {
-                            this.isTransitioning = false;
-                            this.askNextQuestion();
-                            resolve();
-                        }, 1500);
-                    }, 1000);
+            disableInput() {
+                $('#user-input').prop('disabled', true);
+                $('#send').prop('disabled', true);
+            }
+
+            initializeEventListeners() {
+                $('#start-interview').click(() => {
+                    $('#start-interview').prop('disabled', true);
+                    this.startInterview();
                 });
-            } else {
-                this.addMessage("インタビューにご協力いただき、誠にありがとうございました。画面を閉じてください。", false);
-                this.disableInput();
-                $('#start-interview').text('インタビュー終了').prop('disabled', true);
+
+                $('#send').click(async () => {
+                    const userInput = $('#user-input').val().trim();
+                    if (userInput && !this.isTransitioning) {
+                        this.disableInput();
+                        $('#user-input').val('');
+                        await this.handleResponse(userInput);
+                    }
+                });
+
+                $('#user-input').keypress((e) => {
+                    if (e.which == 13 && !$('#send').prop('disabled')) {
+                        $('#send').click();
+                    }
+                });
             }
-        }
-
-        askNextQuestion() {
-            setTimeout(() => {
-                this.showQuestionNumber();
-                this.enableInput();
-            }, 500);
-        }
-
-        startInterview() {
-            if (!this.isInterviewStarted) {
-                this.isInterviewStarted = true;
-                this.addMessage("本日は、{service_name}に関するインタビューにご協力いただき、ありがとうございます。できるだけリラックスしてお答えください。", false);
-                setTimeout(() => {
-                    this.askNextQuestion();
-                }, 1500);
-            }
-        }
-
-        enableInput() {
-            $('#user-input').prop('disabled', false).focus();
-            $('#send').prop('disabled', false);
-        }
-
-        disableInput() {
-            $('#user-input').prop('disabled', true);
-            $('#send').prop('disabled', true);
-        }
-
-        initializeEventListeners() {
-            $('#start-interview').click(() => {
-                $('#start-interview').prop('disabled', true);
-                this.startInterview();
-            });
-
-            $('#send').click(async () => {
-                const userInput = $('#user-input').val().trim();
-                if (userInput && !this.isTransitioning) {
-                    this.addMessage(userInput, true);
-                    this.disableInput();
-                    $('#user-input').val('');
-
-                    const response = await this.callGPT4(userInput);
-                    await this.handleResponse(response);
-                }
-            });
-
-            $('#user-input').keypress((e) => {
-                if (e.which == 13 && !$('#send').prop('disabled')) {
-                    $('#send').click();
-                }
-            });
-        }
         }
     </script>
 
