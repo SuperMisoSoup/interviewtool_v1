@@ -36,7 +36,7 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
     <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
     <style>
         body {
-            padding-top: 60px;
+            padding-top: 50px;
         }
     </style>
 </head>
@@ -64,7 +64,7 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
                 </div>
                 <div class="card-body">
                     <p><span class="font-weight-bold">カテゴリ</span>：<?= h($values_category["category_type"]) ?></p>
-                    <p><span class="font-weight-bold">詳細目的</span>：<?= h($values_category["description"]) ?></p>
+                    <p><span class="font-weight-bold">詳細目的</span>：<?= h($values_category["core_purpose"]) ?></p>
                     <p><span class="font-weight-bold">URL</span>：<?= h($values_category["service_url"]) ?></p>
                     <hr>
                     <div class="table-responsive">

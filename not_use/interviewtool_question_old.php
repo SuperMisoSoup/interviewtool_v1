@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['purpose'])) {
 }
 
 //データ参照SQL
-$sql_select_category = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id;";
+$sql_select_category = "SELECT ct.category_type, q.question_text, c.core_purpose, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id;";
 $stmt = $pdo->prepare($sql_select_category);
 $status = $stmt->execute();
 //SQLエラー確認
@@ -31,8 +31,8 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
 
 // TODO:APIの返す質問をDBに登録
 // category・question登録用SQL
-// INSERT INTO category_question (ca.category_id, ca.category_type_id, ca.description, ca.service_url, ca.created_at, ca.deleted_at, ca.user_id, qu.question_id, qu.category_id, qu.question_text, qu.created_at)
-// SELECT ca.category_id, ca.category_type_id, ca.description, ca.service_url, ca.created_at, ca.deleted_at, ca.user_id, qu.question_id, qu.category_id, qu.question_text, qu.created_at
+// INSERT INTO category_question (ca.category_id, ca.category_type_id, ca.core_purpose, ca.service_url, ca.created_at, ca.deleted_at, ca.user_id, qu.question_id, qu.category_id, qu.question_text, qu.created_at)
+// SELECT ca.category_id, ca.category_type_id, ca.core_purpose, ca.service_url, ca.created_at, ca.deleted_at, ca.user_id, qu.question_id, qu.category_id, qu.question_text, qu.created_at
 // FROM category_table AS ca
 // OUTER JOIN question_table AS qu
 // ON ca.category_id = qu.category_id;
@@ -55,7 +55,7 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      padding-top: 60px;
+      padding-top: 50px;
     }
   </style>
 </head>
@@ -128,7 +128,7 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
       </div>
       <div class="card-body">
         <p><span class="font-weight-bold">カテゴリ</span>：<?= h($values["category_type"]) ?></p>
-        <p><span class="font-weight-bold">詳細目的</span>：<?= h($values["description"]) ?></p>
+        <p><span class="font-weight-bold">詳細目的</span>：<?= h($values["core_purpose"]) ?></p>
         <p><span class="font-weight-bold">URL</span>：<?= h($values["service_url"]) ?></p>
         <!-- FIXME:カテゴリと詳細目的を表示させる -->
         <hr>
@@ -147,7 +147,7 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名の
               <?php foreach ($values as $v) { ?>
                 <tr>
                   <td><?= h($v["category_type"]) ?></td>
-                  <td><?= h($v["description"]) ?></td>
+                  <td><?= h($v["core_purpose"]) ?></td>
                   <td><?= h($v["service_url"]) ?></td>
                   <td><?= h($v["question_text"]) ?></td>
                   <td>

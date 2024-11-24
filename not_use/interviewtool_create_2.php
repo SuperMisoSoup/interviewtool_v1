@@ -6,7 +6,7 @@ sschk();
 // POSTデータ取得
 $category_type_id   = filter_input(INPUT_POST, "category_type_id");
 $service_name       = filter_input(INPUT_POST, "service_name");
-$description        = filter_input(INPUT_POST, "description");
+$core_purpose        = filter_input(INPUT_POST, "core_purpose");
 $service_url        = filter_input(INPUT_POST, "service_url");
 // $user_id         = filter_input(INPUT_POST, "user_id");
 
@@ -14,8 +14,8 @@ $service_url        = filter_input(INPUT_POST, "service_url");
 // A)category DB登録
 try {
     $pdo = db_conn();
-    $stmt = $pdo->prepare("INSERT INTO category_table (category_type_id, service_name, description, service_url) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$category_type_id, $service_name, $description, $service_url]);
+    $stmt = $pdo->prepare("INSERT INTO category_table (category_type_id, service_name, core_purpose, service_url) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$category_type_id, $service_name, $core_purpose, $service_url]);
 
     // 最後に挿入されたIDを取得
     $lastInsertId = $pdo->lastInsertId();
@@ -38,9 +38,9 @@ if ($status == false) {
 
 // OpenAI連携 質問生成
 $category_type  = $row["category_type"];
-$description    = $row["description"];
+$core_purpose    = $row["core_purpose"];
 $service_url    = $row["service_url"];
-$generated_question = str_replace(['`json', '`'], ['', ''], generate_question_v1($category_type, $description, $service_url));
+$generated_question = str_replace(['`json', '`'], ['', ''], generate_question_v1($category_type, $core_purpose, $service_url));
 // $generated_questions = json_decode($generated_question, true);
 // 確認用
 echo '<pre>';
