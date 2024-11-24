@@ -122,9 +122,3 @@ function generate_question($purpose)
     return $result['choices'][0]['message']['content'] ?? 'エラー: 質問を生成できませんでした。';
 }
 // ------------------------------------------
-
-// TODO:チャットタイプにする(API)
-// TODO:質問を一つずつチャット形式で投げかけるようにする(GPT)
-
-// TODO:出力をDBに保存する(SQL)
-// TODO:サマリを出力させる(GPT)

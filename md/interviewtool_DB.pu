@@ -35,6 +35,8 @@ entity category_type_table as "category_type_table\nカテゴリタイプ" {
   + category_type_id [PK]
   --
   category_type
+  description
+  image_tag
 }
 
 entity question_table as "question_table\n質問" {
