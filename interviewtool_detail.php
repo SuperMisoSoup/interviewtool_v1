@@ -39,8 +39,8 @@ if ($status == false) {
 }
 
 // 全データ取得
-$result_age =  $stmt_age->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
-$result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
+$result_age =  $stmt_age->fetchAll(PDO::FETCH_ASSOC);
+$result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
@@ -157,8 +157,7 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[�
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
-                                <div id="chat-messages" style="padding-bottom: 50px; height: calc(80vh - 120px); overflow-y: auto;">
-                                </div>
+                                <div id="chat-box" style="padding-bottom: 50px; height: calc(80vh - 120px); overflow-y: auto;" id="chat-box"></div>
                                 <div class="input-group" style="position: sticky; bottom: 0; background: white;">
                                     <input type="text" class="form-control" id="chat-input" placeholder="メッセージを入力">
                                     <button class="btn btn-primary" onclick="sendMessage()">送信</button>
@@ -169,7 +168,6 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[�
                 </div>
             </div>
         </div>
-
 
         <script>
             // ターゲットユーザのチェックボックスの生成
@@ -208,21 +206,138 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[�
             const myForm = document.getElementById('InterviewForm');
             const errorMessage = document.getElementById('error-message');
 
-            // FIXME:最低1つずつは選択が必須
-            // myForm.addEventListener('submit', (event) => {
-            //     const targetGenderCheckboxes = document.querySelectorAll('input[name="target_gender[]"]:checked');
-            //     const targetAgeCheckboxes = document.querySelectorAll('input[name="target_age[]"]:checked');
+            // namePrefixのnameを持ちチェックが入ったチェックボックスの数を数える
+            function getCheckedValues(namePrefix) {
+                const checkboxes = document.querySelectorAll(`input[name^="${namePrefix}"]`);
+                const checkedValues = [];
 
-            //     if (targetGenderCheckboxes.length === 0 || targetAgeCheckboxes.length === 0) {
-            //         event.preventDefault();
-            //         errorMessage.textContent = 'ターゲットを選択してください。';
-            //     } else {
-            //         errorMessage.textContent = ''; // エラーメッセージをクリア
-            //     }
-            // });
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        checkedValues.push(checkbox.value);
+                    }
+                });
+                return checkedValues;
+            }
+            myForm.addEventListener('submit', (event) => {
+                const checkedGenders = getCheckedValues('target_gender_');
+                const checkedAges = getCheckedValues('target_age_');
+
+                // 性別と年齢のいずれか一つも選択されていない場合、送信を阻止し、エラーメッセージを表示
+                if (checkedGenders.length === 0 || checkedAges.length === 0) {
+                    event.preventDefault();
+                    errorMessage.textContent = '性別と年齢のいずれか一つ以上を選択してください。';
+                } else {
+                    errorMessage.textContent = ''; // エラーメッセージをクリア
+                }
+            });
+        </script>
+
+        <script src="config.php"></script>
+        <script>
+            const CONFIG = {
+                API_ENDPOINT: 'https://api.openai.com/v1/chat/completions',
+                API_KEY: '<?= htmlspecialchars(OPENAI_API_KEY, ENT_QUOTES, 'UTF-8') ?>',
+                MODEL: 'gpt-4o-mini',
+                SYSTEM_PROMPT: `あなたは相談役としてユーザが情報を入力するのを手伝ってください。ユーザはインタビューを生成するのに必要な情報を整理できずに困ってあなたに相談します。
+                                項目は「サービスの特徴」「インタビューの目的」「明確にしたい課題」です。それぞれの項目でユーザの意図をくみ取り、以下のような入力値をユーザに提示してください。それ以外の質問に関しては丁寧に回答を断ってください。
+
+                                サービスの特徴：ポイントサービスとして多数の加盟店を保有しており、経済圏を構築できている
+                                インタビューの目的：ユーザの普段のサービス利用方法と使い方の解像度を上げたい
+                                明確にしたい課題：ポイントサービスのアクティブユーザを増やしたい`
+            };
         </script>
 
         <script>
+            // B)AIチャットボットと会話して入力のヒントを得る
+            async function sendMessage() {
+                const chatInput = document.getElementById("chat-input");
+                const chatBox = document.getElementById("chat-box");
+                const userMessage = chatInput.value.trim();
+
+                if (userMessage === "") return; // 空メッセージの送信を防止
+
+                // ユーザーのメッセージをチャットボックスに表示
+                const userMessageDiv = document.createElement("div");
+                userMessageDiv.className = "alert alert-primary text-end";
+                userMessageDiv.style.marginLeft = "auto";
+                userMessageDiv.style.maxWidth = "80%";
+                userMessageDiv.textContent = "あなた: " + userMessage;
+                chatBox.appendChild(userMessageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // メッセージをクリア
+                chatInput.value = "";
+
+                // 「AIが入力中…」メッセージを左側に表示
+                const typingIndicator = document.createElement("div");
+                typingIndicator.className = "alert alert-secondary text-start";
+                typingIndicator.style.marginRight = "auto";
+                typingIndicator.style.maxWidth = "80%";
+                typingIndicator.textContent = "AIが入力中...";
+                chatBox.appendChild(typingIndicator);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                const data = {
+                    model: CONFIG.MODEL,
+                    messages: [{
+                            role: "system",
+                            content: CONFIG.SYSTEM_PROMPT
+                        },
+                        {
+                            role: "user",
+                            content: userMessage
+                        }
+                    ]
+                };
+
+                // APIリクエストの実行
+                try {
+                    const response = await fetch(CONFIG.API_ENDPOINT, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${CONFIG.API_KEY}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+
+                    // AIの「入力中…」メッセージを削除
+                    chatBox.removeChild(typingIndicator);
+
+                    // AIの返信メッセージを左側に表示
+                    const aiMessage = result.choices[0].message.content;
+                    const aiMessageDiv = document.createElement("div");
+                    aiMessageDiv.className = "alert alert-secondary text-start";
+                    aiMessageDiv.style.marginRight = "auto"; // 左側に表示
+                    aiMessageDiv.style.maxWidth = "80%"; // 横幅制限
+                    aiMessageDiv.textContent = "AI: " + aiMessage;
+                    chatBox.appendChild(aiMessageDiv);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                } catch (error) {
+                    // 「入力中…」メッセージを削除
+                    chatBox.removeChild(typingIndicator);
+
+                    // エラーメッセージの表示
+                    console.error("Error:", error);
+                    const errorMessageDiv = document.createElement("div");
+                    errorMessageDiv.className = "alert alert-danger text-start";
+                    errorMessageDiv.style.marginRight = "auto"; // 左側に表示
+                    errorMessageDiv.style.maxWidth = "80%";
+                    errorMessageDiv.textContent = "エラーが発生しました。もう一度お試しください。";
+                    chatBox.appendChild(errorMessageDiv);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            }
+
+            // Enterキーでメッセージを送信
+            document.getElementById("chat-input").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // デフォルトのEnterの動作を防止
+                    sendMessage();
+                }
+            });
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

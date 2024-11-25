@@ -154,9 +154,7 @@ foreach ($values as $value) {
         $(document).ready(function() {
             const interview = new InterviewManager();
         });
-    </script>
 
-    <script>
         // B)チャットを実行
         class InterviewManager {
             constructor() {
