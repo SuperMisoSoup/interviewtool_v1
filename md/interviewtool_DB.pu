@@ -14,7 +14,7 @@ entity user_table as "user_table\nユーザ" {
 entity interviewee_table as "interviewee_table\nインタビュイー" {
   + interviewee_id [PK]
   --
-  sex
+  gender
   age
   created_at
 }
@@ -24,7 +24,10 @@ entity category_table as "category_table\nカテゴリ" {
   --
   - category_type_id [FK]
   service_name
-  description
+  core_purpose
+  core_issue
+  service_feature
+  competition
   service_url
   created_at
   deleted_at
@@ -37,6 +40,32 @@ entity category_type_table as "category_type_table\nカテゴリタイプ" {
   category_type
   description
   image_tag
+}
+
+entity target_type_table as "target_type_table\nカテゴリ" {
+  + target_type_id [PK]
+  --
+  target_type
+}
+
+entity target_age_table as "target_age_table\nカテゴリ" {
+  + target_age_id [PK]
+  --
+  target_age
+}
+
+entity target_gender_table as "target_gender_table\nカテゴリ" {
+  + target_gender_id [PK]
+  --
+  target_gender
+}
+
+entity category_target_table as "category_target_table\nカテゴリ" {
+  + category_target_id [PK]
+  --
+  - category_id [FK]
+  - target_type_id [FK]
+  - target_id [FK]
 }
 
 entity question_table as "question_table\n質問" {
@@ -75,7 +104,10 @@ entity chat_log_table as "chat_log_table\nチャットログ" {
 
 user_table ||-u--o{ category_table
 category_type_table ||-r--o{ category_table
-' scenario_table ||-l--o{ question_table
+target_type_table ||-r--o{ category_target_table
+category_table ||-u--o{ category_target_table
+target_age_table ||-l--o{ category_target_table
+target_gender_table ||-l--o{ category_target_table
 category_table ||-r--o{ question_table
 interviewee_table ||-u--o{ chat_log_table
 question_table ||-r--o{ chat_log_table

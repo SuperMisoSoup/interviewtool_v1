@@ -8,7 +8,7 @@ $category_id               = $_SESSION["category_id"];
 $_SESSION["category_id"]   = $category_id;
 
 // カテゴリtableの参照
-$sql_select_question = "SELECT ct.category_type, q.question_text, c.description, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" . $category_id . ";";
+$sql_select_question = "SELECT ct.category_type, q.question_text, c.core_purpose, c.service_url, q.delete_flg, c.user_id, q.question_id, c.category_id, ct.category_type_id FROM question_table q INNER JOIN category_table c ON q.category_id = c.category_id INNER JOIN category_type_table ct ON c.category_type_id = ct.category_type_id WHERE c.category_id =" . $category_id . ";";
 $stmt_question = $pdo->prepare($sql_select_question);
 $status_question = $stmt_question->execute();
 // SQLエラー確認
@@ -45,7 +45,7 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
   <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
   <style>
     body {
-      padding-top: 60px;
+      padding-top: 50px;
     }
   </style>
 </head>
@@ -96,7 +96,7 @@ $values_category =  $stmt_category->fetch(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[
       </div>
       <div class="card-body">
         <p><span class="font-weight-bold">カテゴリ</span>：<?= h($values_category["category_type"]) ?></p>
-        <p><span class="font-weight-bold">詳細目的</span>：<?= h($values_category["description"]) ?></p>
+        <p><span class="font-weight-bold">詳細目的</span>：<?= h($values_category["core_purpose"]) ?></p>
         <p><span class="font-weight-bold">URL</span>：<?= h($values_category["service_url"]) ?></p>
         <hr>
         <div class="table-responsive">

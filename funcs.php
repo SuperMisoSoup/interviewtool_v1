@@ -46,24 +46,34 @@ function sschk()
 
 
 include("config.php");
-function generate_question_v1($category_type, $description, $service_url)
+function generate_question_v1($category_type, $core_purpose, $core_issue, $service_feature, $competition, $service_url)
 {
     $api_key =  OPENAI_API_KEY; // `config.php` から API キーを読み込み
     $api_url = 'https://api.openai.com/v1/chat/completions';
 
     // 入力値作成
-    $user_content = $category_type . ' is the objective and' . $description . 'is the detailed objective.';
-    if ($description !== "") {
-        $user_content = $category_type . ' is the objective.';
+    $user_content = '#カテゴリ：' .$category_type;
+    if ($core_purpose !== "") {
+        $user_content .= ' #インタビューの目的：' . $core_purpose;
+    }
+    if ($core_issue !== "") {
+        $user_content .= ' #サービスの解決したい課題：' . $core_issue;
+    }
+    if ($service_feature !== "") {
+        $user_content .= ' #サービスの特徴：'. $service_feature;
+    }
+    if ($competition !== "") {
+        $user_content .= ' #サービスの競合：' . $competition;
     }
     if ($service_url !== "") {
-        $user_content .= ' The target URL is ' . $service_url . '.'; // FIXME:URLの中身も見てもらうプロンプトに改修
+        $user_content .= ' #サービスのURL：' . $service_url; // FIXME:URLの中身も見てもらうプロンプトに改修
     }
+    // TODO:ターゲット情報も組み込む
 
     $data = [
         'model' => 'gpt-4o-mini',
         'messages' => [
-            ['role' => 'system', 'content' => 'As a marketer and depth interview expert, please create a user interview scenario consisting of 10 questions in Japanese aligned with the input objective and detailed objective. Please output only the questions in an array format.'],
+            ['role' => 'system', 'content' => 'As a marketer and depth interview expert, please create a user interview scenario consisting of 10 questions in Japanese aligned with the input objective and detailed objective. Please generate question scenarios that take into account the input conditions and align with the objective, enabling specific and actionable insights to be obtained. Please output only the questions in an array format.'],
             ['role' => 'user', 'content' => $user_content],
         ],
         'max_tokens' => 500,
@@ -82,43 +92,5 @@ function generate_question_v1($category_type, $description, $service_url)
     $context = stream_context_create($options);
     $response = file_get_contents($api_url, false, $context); //string
     $result = json_decode($response, true); // array
-    echo '<pre>';
-    var_dump( $result );
-    echo '</pre>';
     return $result['choices'][0]['message']['content'] ?? 'エラー: 質問を生成できませんでした。';
 }
-
-
-// ------------------------------------------
-// 新しい関数: OpenAI APIを使用して質問を生成する
-function generate_question($purpose)
-{
-    $api_key =  OPENAI_API_KEY; // `config.php` から API キーを読み込み
-    $api_url = 'https://api.openai.com/v1/chat/completions';
-
-    $data = [
-        'model' => 'gpt-4o-mini',
-        'messages' => [
-            ['role' => 'system', 'content' => 'As a marketer and depth interview specialist, create a user interview scenario consisting of approximately 10 questions, tailored to the given purpose. Please output only the questions in array format.'],
-            ['role' => 'user', 'content' => $purpose]
-        ],
-        // 'language' => 'jp',
-        'max_tokens' => 500,
-    ];
-
-    $options = [
-        'http' => [
-            'header' => "Content-type: application/json\r\n" .
-                "Authorization: Bearer $api_key\r\n",
-            'method' => 'POST',
-            'content' => json_encode($data),
-        ],
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents($api_url, false, $context);
-    $result = json_decode($response, true);
-
-    return $result['choices'][0]['message']['content'] ?? 'エラー: 質問を生成できませんでした。';
-}
-// ------------------------------------------
