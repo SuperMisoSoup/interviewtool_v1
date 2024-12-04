@@ -80,10 +80,10 @@ $core_purpose   = $row["core_purpose"];
 $service_url    = $row["service_url"];
 $generated_data = str_replace(['`json', '`'], ['', ''], generate_question_v1($category_type, $core_purpose, $core_issue, $service_feature, $competition, $service_url));
 $generated_data = json_decode($generated_data, true);
-// 確認用
-echo '<pre>';
-var_dump($generated_data);
-echo '</pre>';
+// // 確認用
+// echo '<pre>';
+// var_dump($generated_data);
+// echo '</pre>';
 
 
 // D)DB登録
@@ -165,65 +165,8 @@ if ($stmt->errorCode() !== '00000') {
 } else {
 
     // 画面遷移
-    // header("Location: interviewtool_question.php");
+    header("Location: interviewtool_question2.php");
     exit();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // D)question DB登録
-// $stmt = $pdo->prepare("INSERT INTO question_table (category_id, question_text) VALUES (?, ?)");
-// foreach ($generated_datas as $gq) {
-//     $stmt->bindValue(1, $lastInsertId);
-//     $stmt->bindValue(2, $gq);
-//     $stmt->execute();
-// }
-
-// // サーバで値を保持しておく
-// $_SESSION["category_id"] = $lastInsertId;
-
-
-// // 登録後処理
-// if ($stmt->errorCode() !== '00000') {
-//     //SQL実行時にエラーがある場合（エラーオブジェクト取得して表示）
-//     $error = $stmt->errorInfo();
-//     exit("SQLError:" . $error[2]);
-//     $error_update = $stmt_update->errorInfo();
-//     exit("SQLError_update:" . $error_update[2]);
-// } else {
-
-//     // 画面遷移
-//     header("Location: interviewtool_question.php");
-//     exit();
-// }
-
-// =================
-// foreach ($generated_data['section'] as $sectoin){
-//     // セクションidをsection_tableに登録
-//     $section_id =
-//     foreach ($generated_data['questions'] as $questions){
-//         $
-//     }
-// }
-
-
-
-
-
-
-
-
 
 ?>
