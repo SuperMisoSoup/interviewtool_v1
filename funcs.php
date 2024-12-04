@@ -78,6 +78,7 @@ function generate_question_v1($category_type, $core_purpose, $core_issue, $servi
             ['role' => 'system', 'content' => 'あなたはマーケターで、デプスインタビューの専門家です。
                                                 サービスの利用者向けにインタビューを実施するために質問フローを作成してください。
                                                 ユーザ入力を考慮し、目的に沿って、具体的なインサイトが得られる質問シナリオになるようにしてください。
+                                                質問では過去や現在のことの内容にし、未来に関して言及しないでください。
                                                 必須出力はsection_text、question_text、question_purposeであり、任意出力はdig_pointです。
                                                 出力は次のようなjson形式としてください。
                                                 {

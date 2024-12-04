@@ -165,7 +165,7 @@ if ($stmt->errorCode() !== '00000') {
 } else {
 
     // 画面遷移
-    header("Location: interviewtool_question2.php");
+    header("Location: interviewtool_question.php");
     exit();
 }
 
