@@ -22,6 +22,7 @@ $core_issue         = filter_input(INPUT_POST, "core_issue");
 $service_feature    = filter_input(INPUT_POST, "service_feature");
 $competition        = filter_input(INPUT_POST, "competition");
 $service_url        = filter_input(INPUT_POST, "service_url");
+$target_detail      = filter_input(INPUT_POST, "target_detail");
 // $user_id         = filter_input(INPUT_POST, "user_id");
 foreach ($_POST as $key => $value) {
     if (strpos($key, 'target_gender') === 0) {
@@ -33,16 +34,6 @@ foreach ($_POST as $key => $value) {
         $target_age[] = $value;
     }
 }
-
-// 確認用
-echo '<pre>';
-var_dump($core_purpose);
-var_dump($service_feature);
-var_dump($competition);
-var_dump($target_gender);
-var_dump($target_age);
-echo '</pre>';
-
 
 // A)category DB登録
 try {
@@ -87,19 +78,77 @@ if ($status == false) {
 $category_type  = $row["category_type"];
 $core_purpose   = $row["core_purpose"];
 $service_url    = $row["service_url"];
-$generated_question = str_replace(['`json', '`'], ['', ''], generate_question_v1($category_type, $core_purpose, $core_issue, $service_feature, $competition, $service_url));
-$generated_questions = json_decode($generated_question, true);
+$generated_data = str_replace(['`json', '`'], ['', ''], generate_question_v1($category_type, $core_purpose, $core_issue, $service_feature, $competition, $service_url));
+$generated_data = json_decode($generated_data, true);
 // // 確認用
 // echo '<pre>';
-// var_dump($generated_question);
+// var_dump($generated_data);
 // echo '</pre>';
 
-// D)question DB登録
-$stmt = $pdo->prepare("INSERT INTO question_table (category_id, question_text) VALUES (?, ?)");
-foreach ($generated_questions as $gq) {
-    $stmt->bindValue(1, $lastInsertId);
-    $stmt->bindValue(2, $gq);
-    $stmt->execute();
+
+// D)DB登録
+// トランザクション開始
+$pdo->beginTransaction();
+
+try {
+    $section_order = 1;
+
+    foreach ($generated_data['scenario'] as $scenario) {
+        foreach ($scenario['section'] as $section) {
+            // section_tableに挿入
+            $stmt = $pdo->prepare("
+                INSERT INTO section_table (category_id, section_text, section_order, delete_flg, created_at, updated_at)
+                VALUES (:category_id, :section_text, :section_order, 0, NOW(), NOW())
+            ");
+            $stmt->bindValue(':category_id', $lastInsertId, PDO::PARAM_INT);
+            $stmt->bindValue(':section_text', $section['section_text'], PDO::PARAM_STR);
+            $stmt->bindValue(':section_order', $section_order++, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $sectionId = $pdo->lastInsertId();
+
+            $question_order = 1;
+
+            foreach ($section['questions'] as $question) {
+                // question_tableに挿入
+                $stmt = $pdo->prepare("
+                    INSERT INTO question_table (section_id, question_text, question_purpose, question_order, delete_flg, created_at, deleted_at)
+                    VALUES (:section_id, :question_text, :question_purpose, :question_order, 0, NOW(), NULL)
+                ");
+                $stmt->bindValue(':section_id', $sectionId, PDO::PARAM_INT);
+                $stmt->bindValue(':question_text', $question['question_text'], PDO::PARAM_STR);
+                $stmt->bindValue(':question_purpose', $question['question_purpose'], PDO::PARAM_STR);
+                $stmt->bindValue(':question_order', $question_order++, PDO::PARAM_INT);
+                $stmt->execute();
+
+                $questionId = $pdo->lastInsertId();
+
+                $dig_point_order = 1;
+
+                for ($i = 1; $i <= 2; $i++) {
+                    $digPointKey = "dig_point_$i";
+                    if (!empty($question[$digPointKey])) {
+                        // dig_point_tableに挿入
+                        $stmt = $pdo->prepare("
+                            INSERT INTO dig_point_table (for_question_id, dig_point_text, dig_point_order, delete_flg, created_at, updated_at)
+                            VALUES (:for_question_id, :dig_point_text, :dig_point_order, 0, NOW(), NOW())
+                        ");
+                        $stmt->bindValue(':for_question_id', $questionId, PDO::PARAM_INT);
+                        $stmt->bindValue(':dig_point_text', $question[$digPointKey], PDO::PARAM_STR);
+                        $stmt->bindValue(':dig_point_order', $dig_point_order++, PDO::PARAM_INT);
+                        $stmt->execute();
+                    }
+                }
+            }
+        }
+    }
+
+    // トランザクションをコミット
+    $pdo->commit();
+} catch (Exception $e) {
+    // エラーが発生した場合はロールバック
+    $pdo->rollBack();
+    die("データ登録エラー: " . $e->getMessage());
 }
 
 // サーバで値を保持しておく
@@ -119,4 +168,5 @@ if ($stmt->errorCode() !== '00000') {
     header("Location: interviewtool_question.php");
     exit();
 }
+
 ?>

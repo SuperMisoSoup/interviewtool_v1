@@ -116,15 +116,15 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
                             <textarea class="form-control" id="competition" name="competition" placeholder="インタビューポイント、AIポイント" rows="2"></textarea>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="core_issue" class="form-label">サービスの課題</label>
+                            <textarea class="form-control" id="core_issue" name="core_issue" placeholder="若年層のアクティブユーザを増やしたい" rows="2"></textarea>
+                        </div>
+
                         <!-- <h3>インタビュー内容</h3> -->
                         <div class="mb-3">
                             <label for="core_purpose" class="form-label">インタビューの目的</label>
-                            <textarea class="form-control" id="core_purpose" name="core_purpose" placeholder="ユーザーの普段のサービス利用方法と使い方の解像度を上げたい" rows="2"></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="core_issue" class="form-label">明確にしたい課題</label>
-                            <textarea class="form-control" id="core_issue" name="core_issue" placeholder="ポイントサービスのアクティブユーザーを増やしたい" rows="2"></textarea>
+                            <textarea class="form-control" id="core_purpose" name="core_purpose" placeholder="ユーザの普段のサービス利用方法と使い方の解像度を上げたい" rows="2"></textarea>
                         </div>
 
                         <!-- <h3>インタビューターゲット</h3> -->
@@ -135,6 +135,7 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
                                 <div id="age-checkboxes" name="target_age"></div>
                             </div>
                             <div class="text-danger" id="error-message"></div>
+                            <textarea class="form-control" id="target_detail" name="target_detail" placeholder="コンビニなどで日常的にポイント利用するユーザ" rows="2"></textarea>
                         </div>
 
                         <div class="position-relative">

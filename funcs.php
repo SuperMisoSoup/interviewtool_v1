@@ -52,31 +52,54 @@ function generate_question_v1($category_type, $core_purpose, $core_issue, $servi
     $api_url = 'https://api.openai.com/v1/chat/completions';
 
     // 入力値作成
-    $user_content = '#カテゴリ：' .$category_type;
-    if ($core_purpose !== "") {
-        $user_content .= ' #インタビューの目的：' . $core_purpose;
+    $user_content = '入力は以下です。#カテゴリ：' . $category_type;
+    if ($service_feature !== "") {
+        $user_content .= ' #サービスの特徴：' . $service_feature;
     }
     if ($core_issue !== "") {
         $user_content .= ' #サービスの解決したい課題：' . $core_issue;
     }
-    if ($service_feature !== "") {
-        $user_content .= ' #サービスの特徴：'. $service_feature;
+    if ($core_purpose !== "") {
+        $user_content .= ' #インタビューの目的：' . $core_purpose;
     }
     if ($competition !== "") {
         $user_content .= ' #サービスの競合：' . $competition;
     }
     if ($service_url !== "") {
-        $user_content .= ' #サービスのURL：' . $service_url; // FIXME:URLの中身も見てもらうプロンプトに改修
+        $user_content .= ' #サービスのURL：' . $service_url;
     }
     // TODO:ターゲット情報も組み込む
+    // TODO:マーケ目的→マーケ課題→インタビュー目的→インタビューターゲットの流れを理解させる
+    // TODO:過去と現在の事実だけを聞くような質問にする
 
     $data = [
         'model' => 'gpt-4o-mini',
         'messages' => [
-            ['role' => 'system', 'content' => 'As a marketer and depth interview expert, please create a user interview scenario consisting of 10 questions in Japanese aligned with the input objective and detailed objective. Please generate question scenarios that take into account the input conditions and align with the objective, enabling specific and actionable insights to be obtained. Please output only the questions in an array format.'],
+            ['role' => 'system', 'content' => 'あなたはマーケターで、デプスインタビューの専門家です。
+                                                サービスの利用者向けにインタビューを実施するために質問フローを作成してください。
+                                                ユーザ入力を考慮し、目的に沿って、具体的なインサイトが得られる質問シナリオになるようにしてください。
+                                                質問では過去や現在のことの内容にし、未来に関して言及しないでください。
+                                                必須出力はsection_text、question_text、question_purposeであり、任意出力はdig_pointです。
+                                                出力は次のようなjson形式としてください。
+                                                {
+                                                    "scenario":[
+                                                        "section":[
+                                                            "section_text":"",
+                                                            "questions":[
+                                                                {
+                                                                    "question_text":"",
+                                                                    "question_purpose":"",
+                                                                    "dig_point_1":"",
+                                                                    "dig_point_2":""
+                                                                }
+                                                                ]
+                                                            ] 
+                                                        ]
+                                                }
+                                                '],
             ['role' => 'user', 'content' => $user_content],
         ],
-        'max_tokens' => 500,
+        'max_tokens' => 5000,
     ];
 
     $options = [
