@@ -68,26 +68,39 @@ entity category_target_table as "category_target_table\nカテゴリ" {
   - target_id [FK]
 }
 
+entity section_table as "section_table\n目的セクション" {
+  + section_id [PK]
+  --
+  - category_id [FK]
+  section_text
+  section_order
+  delete_flg
+  created_at
+  updated_at
+}
+
 entity question_table as "question_table\n質問" {
   + question_id [PK]
   --
-  - category_id [FK]
+  - section_id [FK]
   question_text
+  question_purpose
   question_order
   delete_flg
   created_at
   deleted_at
 }
 
-
-' entity scenario_table as "scenario_table\nシナリオ管理" {
-'   + scenario_id [PK]
-'   --
-'   ' - category_id [FK]
-'   distributed_url
-'   created_at
-'   updated_at
-' }
+entity dig_point_table as "dig_point_table\n深堀ポイント" {
+  + dig_point_id [PK]
+  --
+  - for_question_id [FK]
+  dig_point_text
+  dig_point_order
+  delete_flg
+  created_at
+  updated_at
+}
 
 entity chat_log_table as "chat_log_table\nチャットログ" {
   + chat_log_id [PK]
@@ -108,8 +121,10 @@ target_type_table ||-r--o{ category_target_table
 category_table ||-u--o{ category_target_table
 target_age_table ||-l--o{ category_target_table
 target_gender_table ||-l--o{ category_target_table
-category_table ||-r--o{ question_table
+category_table ||-r--o{ section_table
+section_table ||-r--o{ question_table
+question_table ||-r--o{ dig_point_table
+' question_table ||-r--o{ chat_log_table
 interviewee_table ||-u--o{ chat_log_table
-question_table ||-r--o{ chat_log_table
 
 @enduml
