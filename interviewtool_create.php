@@ -14,7 +14,7 @@ include("funcs.php");
 session_start();
 sschk();
 
-// POSTデータ取得
+// データ取得
 $category_type_id   = filter_input(INPUT_POST, "category_type_id");
 $service_name       = filter_input(INPUT_POST, "service_name");
 $core_purpose       = filter_input(INPUT_POST, "core_purpose");
@@ -23,7 +23,8 @@ $service_feature    = filter_input(INPUT_POST, "service_feature");
 $competition        = filter_input(INPUT_POST, "competition");
 $service_url        = filter_input(INPUT_POST, "service_url");
 $target_detail      = filter_input(INPUT_POST, "target_detail");
-// $user_id         = filter_input(INPUT_POST, "user_id");
+$user_id            = $_SESSION["user_id"];
+
 foreach ($_POST as $key => $value) {
     if (strpos($key, 'target_gender') === 0) {
         $target_gender[] = $value;
@@ -38,8 +39,8 @@ foreach ($_POST as $key => $value) {
 // A)category DB登録
 try {
     $pdo = db_conn();
-    $stmt = $pdo->prepare("INSERT INTO category_table (category_type_id, service_name, core_purpose, core_issue, service_feature, competition, service_url) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$category_type_id, $service_name, $core_purpose, $core_issue, $service_feature, $competition, $service_url]);
+    $stmt = $pdo->prepare("INSERT INTO category_table (category_type_id, service_name, core_purpose, core_issue, service_feature, competition, service_url, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$category_type_id, $service_name, $core_purpose, $core_issue, $service_feature, $competition, $service_url, $user_id]);
 
     // 最後に挿入されたIDを取得
     $lastInsertId = $pdo->lastInsertId();

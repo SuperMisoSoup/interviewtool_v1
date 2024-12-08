@@ -15,6 +15,10 @@ sschk();
 //GETデータ取得
 $category_type_id = $_GET["category_type_id"];
 
+//ログインデータ取得
+$admin_flg = $_SESSION["admin_flg"];
+$user_id = $_SESSION["user_id"];
+
 //データ参照SQL
 $pdo = db_conn();
 $sql_category_type = "SELECT * FROM category_type_table WHERE category_type_id=:category_type_id;";
@@ -72,10 +76,27 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">カテゴリ選択</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <a class="navbar-brand" href="interviewtool_category.php">AI InterView</a>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="interviewtool_scenario_view.php">インタビューシナリオ</a>
+                    </li>
+                    <?php if ($admin_flg == 1) { ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">ユーザ管理</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="user_add.php">ユーザ追加</a></li>
+                                <li><a class="dropdown-item" href="#">ユーザ編集</a></li>
+                                <!-- <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li> -->
+                            </ul>
+                        </li>
+                    <?php } ?>
+                </ul>
+            </div>
         </div>
     </nav>
 </header>
@@ -94,6 +115,7 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
                             ?>
                         </h2>
                         <input type="hidden" name="category_type_id" value="<?= $category_type_id ?>">
+                        <input type="hidden" name="user_id" value="<?= $user_id ?>">
                         <!-- <h3>サービス情報</h3> -->
                         <div class="mb-3">
                             <label for="service_name" class="form-label">サービス名</label>
@@ -129,13 +151,13 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
 
                         <!-- <h3>インタビューターゲット</h3> -->
                         <div class="mb-3">
-                            <label for="exampleFormControlTextarea1" class="form-label">ターゲットとなるユーザ</label>
+                            <label for="exampleFormControlTextarea1" class="form-label">インタビューのターゲット</label>
                             <div id="target-checkboxes">
                                 <div id="gender-checkboxes" name="target_gender"></div>
                                 <div id="age-checkboxes" name="target_age"></div>
                             </div>
                             <div class="text-danger" id="error-message"></div>
-                            <textarea class="form-control" id="target_detail" name="target_detail" placeholder="コンビニなどで日常的にポイント利用するユーザ" rows="2"></textarea>
+                            <textarea class="form-control" id="target_detail" name="target_detail" placeholder="コンビニなどで日常的にポイント利用しているユーザ" rows="2"></textarea>
                         </div>
 
                         <div class="position-relative">

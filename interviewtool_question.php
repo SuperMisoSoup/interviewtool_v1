@@ -4,8 +4,8 @@ session_start();
 sschk();
 $pdo = db_conn();
 
-$category_id               = $_SESSION["category_id"];
-$_SESSION["category_id"]   = $category_id;
+$category_id  = $_SESSION["category_id"];
+$admin_flg    = $_SESSION["admin_flg"];
 
 // カテゴリtableの参照
 $sql_select = "
@@ -117,34 +117,27 @@ $section_index = 1;
 <header>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">インタビュー管理システム</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <!-- <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <a class="navbar-brand" href="interviewtool_category.php">AI InterView</a>
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link active" href="design.php">インタビュー設計</a>
+          <a class="nav-link active" aria-current="page" href="interviewtool_scenario_view.php">インタビューシナリオ</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="respondent.php">インタビュアーリスト</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="answer.php">回答入力</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="analysis_2.php">結果分析</a>
-          </li>
+          <?php if ($admin_flg == 1) { ?>
+            <li class="nav-item dropdown">
+              <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">ユーザ管理</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="user_add.php">ユーザ追加</a></li>
+                <li><a class="dropdown-item" href="user_select.php">ユーザ一覧</a></li>
+                <!-- <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li> -->
+              </ul>
+            </li>
+          <?php } ?>
         </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="user.php">ユーザー登録</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="logout.php">ログアウト</a>
-          </li>
-        </ul>
-      </div> -->
+      </div>
     </div>
   </nav>
 </header>
@@ -153,7 +146,7 @@ $section_index = 1;
   <div class="container my-5">
     <?php foreach ($sections as $sectionText => $questions): ?>
       <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <h4 class="border-bottom pb-2 mb-0"><?= $section_index ++ ?>.<?= htmlspecialchars($sectionText) ?></h4>
+        <h4 class="border-bottom pb-2 mb-0"><?= $section_index++ ?>.<?= htmlspecialchars($sectionText) ?></h4>
         <?php foreach ($questions as $questionText => $details): ?>
           <div class="d-flex pt-3">
             <div class="pb-3 mb-0 lh-sm border-bottom w-100">
@@ -170,40 +163,7 @@ $section_index = 1;
       </div>
     <?php endforeach; ?>
 
-
-
-
-
-
-    <div class="container my-5">
-      <?php $section_index = 1; ?>
-      <?php foreach ($sections as $sectionText => $questions): ?>
-        <div class="my-3 p-3 bg-body rounded shadow-sm">
-          <!-- セクションタイトル -->
-          <h4 class="border-bottom pb-2 mb-0"><?= $section_index ++ ?>.<?= htmlspecialchars($sectionText) ?></h4>
-          <div class="table-responsive pt-3">
-            <table class="table table-borderless">
-              <?php foreach ($questions as $questionText => $details): ?>
-                <tr>
-                  <td class="col-question"><strong><?= htmlspecialchars($questionText) ?></strong></td>
-                  <td class="col-purpose text-body-secondary"><?= htmlspecialchars($details['purpose']) ?></td>
-                  <td class="col-dig-point">
-                    <?php foreach ($details['dig_points'] as $digPointText): ?>
-                      <div><?= htmlspecialchars($digPointText) ?></div>
-                    <?php endforeach; ?>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-            </table>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    </div>
-
-
-
-
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

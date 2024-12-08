@@ -44,7 +44,6 @@ function sschk()
     }
 }
 
-
 include("config.php");
 function generate_question_v1($category_type, $core_purpose, $core_issue, $service_feature, $competition, $service_url)
 {

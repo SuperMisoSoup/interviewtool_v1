@@ -1,7 +1,11 @@
 <?php
 session_start();
 include "funcs.php";
-// sschk();
+sschk();
+
+$admin_flg = $_SESSION["admin_flg"];
+$_SESSION["admin_flg"] = $admin_flg;
+
 ?>
 
 <!DOCTYPE html>
@@ -9,8 +13,8 @@ include "funcs.php";
 
 <head>
   <meta charset="UTF-8">
-  <title>USERデータ登録</title>
-  <!-- Bootstrap 5.3.0 CSSの追加 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ユーザ登録</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -19,24 +23,40 @@ include "funcs.php";
   </style>
 </head>
 
-<body>
-
-  <!-- Header -->
-  <header class="mb-4 bg-light py-3">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center">
-        <span><?php echo $_SESSION["name"]; ?>さん</span>
-        <a href="login.php" class="btn btn-primary">ログイン画面へ</a>
+<!-- ナビゲーションバー -->
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <a class="navbar-brand" href="interviewtool_category.php">AI InterView</a>
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">インタビューシナリオ</a>
+          </li>
+          <?php if ($admin_flg == 1) { ?>
+            <li class="nav-item dropdown">
+              <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">ユーザ管理</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="user_add.php">ユーザ追加</a></li>
+                <li><a class="dropdown-item" href="#">ユーザ編集</a></li>
+                <!-- <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="#">Something else here</a></li> -->
+              </ul>
+            </li>
+          <?php } ?>
+        </ul>
       </div>
     </div>
-  </header>
-
+  </nav>
+</header>
+<body class="bg-light">
   <!-- Main Content -->
-  <div class="container">
-    <h1 class="text-center mb-4">ユーザー登録</h1>
+  <div class="container px-4 py-5">
+    <h1 class="pb-2 border-bottom">ユーザ登録</h1>
     <form method="post" action="user_insert.php">
       <fieldset>
-        <legend class="mb-3">登録情報</legend>
 
         <!-- 名前 -->
         <div class="mb-3">
@@ -74,10 +94,8 @@ include "funcs.php";
       </fieldset>
     </form>
   </div>
-
-  <!-- Bootstrap 5.3.0 JSの追加 -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </html>

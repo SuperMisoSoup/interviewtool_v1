@@ -1,0 +1,24 @@
+    <div class="container my-5">
+      <?php $section_index = 1; ?>
+      <?php foreach ($sections as $sectionText => $questions): ?>
+        <div class="my-3 p-3 bg-body rounded shadow-sm">
+          <!-- セクションタイトル -->
+          <h4 class="border-bottom pb-2 mb-0"><?= $section_index ++ ?>.<?= htmlspecialchars($sectionText) ?></h4>
+          <div class="table-responsive pt-3">
+            <table class="table table-borderless">
+              <?php foreach ($questions as $questionText => $details): ?>
+                <tr>
+                  <td class="col-question"><strong><?= htmlspecialchars($questionText) ?></strong></td>
+                  <td class="col-purpose text-body-secondary"><?= htmlspecialchars($details['purpose']) ?></td>
+                  <td class="col-dig-point">
+                    <?php foreach ($details['dig_points'] as $digPointText): ?>
+                      <div><?= htmlspecialchars($digPointText) ?></div>
+                    <?php endforeach; ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </table>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
