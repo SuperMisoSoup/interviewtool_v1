@@ -24,33 +24,8 @@ $_SESSION["admin_flg"] = $admin_flg;
 </head>
 
 <!-- ナビゲーションバー -->
-<header>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container-fluid">
-      <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <a class="navbar-brand" href="interviewtool_category.php">AI InterView</a>
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">インタビューシナリオ</a>
-          </li>
-          <?php if ($admin_flg == 1) { ?>
-            <li class="nav-item dropdown">
-              <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">ユーザ管理</a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="user_add.php">ユーザ追加</a></li>
-                <li><a class="dropdown-item" href="#">ユーザ編集</a></li>
-                <!-- <li>
-                  <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item" href="#">Something else here</a></li> -->
-              </ul>
-            </li>
-          <?php } ?>
-        </ul>
-      </div>
-    </div>
-  </nav>
-</header>
+<?php create_header($admin_flg); ?>
+
 <body class="bg-light">
   <!-- Main Content -->
   <div class="container px-4 py-5">

@@ -73,34 +73,7 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <!-- ナビゲーションバー -->
-<header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <a class="navbar-brand" href="interviewtool_category.php">AI InterView</a>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="interviewtool_scenario_view.php">インタビューシナリオ</a>
-                    </li>
-                    <?php if ($admin_flg == 1) { ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">ユーザ管理</a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="user_add.php">ユーザ追加</a></li>
-                                <li><a class="dropdown-item" href="#">ユーザ編集</a></li>
-                                <!-- <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li> -->
-                            </ul>
-                        </li>
-                    <?php } ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
-
+<?php create_header($admin_flg); ?>
 
 <body class="bg-light">
     <div class="container">
@@ -109,11 +82,11 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
             <div class="col-md-7">
                 <form method="post" action="interviewtool_create.php" id="InterviewForm">
                     <div class="container px-4 py-5" id="hanging-icons">
-                        <h2 class="pb-2 border-bottom">
+                        <h1 class="pb-2 border-bottom">
                             <?php
                             echo $row["category_type"];
                             ?>
-                        </h2>
+                        </h1>
                         <input type="hidden" name="category_type_id" value="<?= $category_type_id ?>">
                         <input type="hidden" name="user_id" value="<?= $user_id ?>">
                         <!-- <h3>サービス情報</h3> -->
