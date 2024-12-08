@@ -4,6 +4,10 @@ session_start();
 sschk();
 $pdo = db_conn();
 
+//ログインデータ取得
+$admin_flg = $_SESSION["admin_flg"];
+$user_id = $_SESSION["user_id"];
+
 //データ参照SQL
 $sql_select_category = "SELECT * FROM category_type_table;";
 $stmt = $pdo->prepare($sql_select_category);
@@ -33,16 +37,7 @@ $values =  $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <!-- ナビゲーションバー -->
-<header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">カテゴリ選択</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-    </nav>
-</header>
+<?php create_header($admin_flg); ?>
 
 <body class="bg-light">
     <div class="container px-4 py-5" id="hanging-icons">

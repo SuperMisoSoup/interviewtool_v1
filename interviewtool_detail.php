@@ -15,6 +15,10 @@ sschk();
 //GETデータ取得
 $category_type_id = $_GET["category_type_id"];
 
+//ログインデータ取得
+$admin_flg = $_SESSION["admin_flg"];
+$user_id = $_SESSION["user_id"];
+
 //データ参照SQL
 $pdo = db_conn();
 $sql_category_type = "SELECT * FROM category_type_table WHERE category_type_id=:category_type_id;";
@@ -69,17 +73,7 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <!-- ナビゲーションバー -->
-<header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">カテゴリ選択</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-    </nav>
-</header>
-
+<?php create_header($admin_flg); ?>
 
 <body class="bg-light">
     <div class="container">
@@ -88,12 +82,13 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
             <div class="col-md-7">
                 <form method="post" action="interviewtool_create.php" id="InterviewForm">
                     <div class="container px-4 py-5" id="hanging-icons">
-                        <h2 class="pb-2 border-bottom">
+                        <h1 class="pb-2 border-bottom">
                             <?php
                             echo $row["category_type"];
                             ?>
-                        </h2>
+                        </h1>
                         <input type="hidden" name="category_type_id" value="<?= $category_type_id ?>">
+                        <input type="hidden" name="user_id" value="<?= $user_id ?>">
                         <!-- <h3>サービス情報</h3> -->
                         <div class="mb-3">
                             <label for="service_name" class="form-label">サービス名</label>
@@ -129,13 +124,13 @@ $result_gender =  $stmt_gender->fetchAll(PDO::FETCH_ASSOC);
 
                         <!-- <h3>インタビューターゲット</h3> -->
                         <div class="mb-3">
-                            <label for="exampleFormControlTextarea1" class="form-label">ターゲットとなるユーザ</label>
+                            <label for="exampleFormControlTextarea1" class="form-label">インタビューのターゲット</label>
                             <div id="target-checkboxes">
                                 <div id="gender-checkboxes" name="target_gender"></div>
                                 <div id="age-checkboxes" name="target_age"></div>
                             </div>
                             <div class="text-danger" id="error-message"></div>
-                            <textarea class="form-control" id="target_detail" name="target_detail" placeholder="コンビニなどで日常的にポイント利用するユーザ" rows="2"></textarea>
+                            <textarea class="form-control" id="target_detail" name="target_detail" placeholder="コンビニなどで日常的にポイント利用しているユーザ" rows="2"></textarea>
                         </div>
 
                         <div class="position-relative">

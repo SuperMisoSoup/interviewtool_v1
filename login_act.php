@@ -34,7 +34,7 @@ if ($val["resigned_flg"]) {
     //Login成功時$_SESSIONに値を代入
     $_SESSION["chk_ssid"]  = session_id(); //session_IDを取得して代入
     $_SESSION["admin_flg"] = $val['admin_flg'];
-    $_SESSION["name"]      = $val['name'];
+    $_SESSION["user_id"]      = $val['user_id'];
     //Login成功時（select.phpへ）
     redirect("interviewtool_category.php");
   } else {
