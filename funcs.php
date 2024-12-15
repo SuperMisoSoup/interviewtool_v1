@@ -52,7 +52,7 @@ function create_header($admin_flg)
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
             <div class="container-fluid">
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                    <a class="navbar-brand" href="interviewtool_category.php">AI InterView</a>
+                    <a class="navbar-brand" href="interviewtool_category.php">AI Interview</a>
                     <ul class="navbar-nav">
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="interviewtool_scenario_view.php">インタビューシナリオ</a>
